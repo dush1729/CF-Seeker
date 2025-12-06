@@ -17,5 +17,5 @@ data class RatingChange(
     @SerializedName("rank")
     val rank: Int,
     @SerializedName("ratingUpdateTimeSeconds")
-    val ratingUpdateTimeSeconds: Int
+    val ratingUpdateTimeSeconds: Long
 )

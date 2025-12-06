@@ -23,7 +23,7 @@ data class User(
     @SerializedName("lastName")
     val lastName: String?,
     @SerializedName("lastOnlineTimeSeconds")
-    val lastOnlineTimeSeconds: Int,
+    val lastOnlineTimeSeconds: Long,
     @SerializedName("maxRank")
     val maxRank: String?,
     @SerializedName("maxRating")
@@ -35,7 +35,7 @@ data class User(
     @SerializedName("rating")
     val rating: Int?,
     @SerializedName("registrationTimeSeconds")
-    val registrationTimeSeconds: Int,
+    val registrationTimeSeconds: Long,
     @SerializedName("titlePhoto")
     val titlePhoto: String
 )
