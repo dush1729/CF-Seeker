@@ -8,7 +8,7 @@ import androidx.room.Entity
 )
 data class RatingChangeEntity(
     val handle: String,
-    val contestId: Int?,
+    val contestId: Int,
     val contestName: String,
     val contestRank: Int,
     val oldRating: Int,
