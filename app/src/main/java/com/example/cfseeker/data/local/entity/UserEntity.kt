@@ -24,4 +24,6 @@ data class UserEntity(
     val rating: Int?,
     val registrationTimeSeconds: Long,
     val titlePhoto: String,
+
+    val lastSync: Long,
 )

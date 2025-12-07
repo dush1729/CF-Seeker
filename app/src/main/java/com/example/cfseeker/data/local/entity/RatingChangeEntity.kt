@@ -14,4 +14,6 @@ data class RatingChangeEntity(
     val oldRating: Int,
     val newRating: Int,
     val ratingUpdateTimeSeconds: Long,
+
+    val lastSync: Long
 )
