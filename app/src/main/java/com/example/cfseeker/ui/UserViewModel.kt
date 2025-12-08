@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cfseeker.data.local.entity.RatingChangeEntity
 import com.example.cfseeker.data.local.entity.UserEntity
+import com.example.cfseeker.data.local.entity.UserRatingChanges
 import com.example.cfseeker.data.repository.UserRepository
 import com.example.cfseeker.ui.base.UiState
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +18,7 @@ import javax.inject.Inject
 class UserViewModel @Inject constructor(
     private val repository: UserRepository,
 ): ViewModel() {
-    private val _uiState = MutableStateFlow<UiState<List<Pair<UserEntity, RatingChangeEntity?>>>>(
+    private val _uiState = MutableStateFlow<UiState<List<UserRatingChanges>>>(
         UiState.Success(emptyList()))
     val uiState = _uiState.asStateFlow()
 

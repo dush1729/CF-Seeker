@@ -9,9 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.example.cfseeker.data.local.entity.RatingChangeEntity
 import com.example.cfseeker.data.local.entity.UserEntity
+import com.example.cfseeker.data.local.entity.UserRatingChanges
 import com.example.cfseeker.databinding.UserItemBinding
 
-class UserAdapter: ListAdapter<Pair<UserEntity, RatingChangeEntity?>, UserAdapter.UserViewHolder>(
+class UserAdapter: ListAdapter<UserRatingChanges, UserAdapter.UserViewHolder>(
     UserRatingChangeDiffUtil()
 ) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
@@ -25,10 +26,10 @@ class UserAdapter: ListAdapter<Pair<UserEntity, RatingChangeEntity?>, UserAdapte
     }
 
     class UserViewHolder(private val binding: UserItemBinding): RecyclerView.ViewHolder(binding.root) {
-        fun bind(userRatingChange: Pair<UserEntity, RatingChangeEntity?>) {
-            binding.userAvatar.load(userRatingChange.first.avatar)
-            binding.userHandle.text = userRatingChange.first.handle
-            userRatingChange.second?.let { userRatingChange ->
+        fun bind(userRatingChange: UserRatingChanges) {
+            binding.userAvatar.load(userRatingChange.user.avatar)
+            binding.userHandle.text = userRatingChange.user.handle
+            userRatingChange.ratingChanges.lastOrNull()?.let { userRatingChange ->
                 val delta = userRatingChange.newRating - userRatingChange.oldRating
                 binding.ratingDelta.text = delta.toString()
                 if(delta < 0) {
@@ -41,19 +42,12 @@ class UserAdapter: ListAdapter<Pair<UserEntity, RatingChangeEntity?>, UserAdapte
 }
 
 private class UserRatingChangeDiffUtil:
-    DiffUtil.ItemCallback<Pair<UserEntity, RatingChangeEntity?>>() {
-    override fun areItemsTheSame(
-        oldItem: Pair<UserEntity, RatingChangeEntity?>,
-        newItem: Pair<UserEntity, RatingChangeEntity?>
-    ): Boolean {
-        return oldItem.first.handle == newItem.first.handle &&
-                oldItem.second?.contestId == newItem.second?.contestId
+    DiffUtil.ItemCallback<UserRatingChanges>() {
+    override fun areItemsTheSame(oldItem: UserRatingChanges, newItem: UserRatingChanges): Boolean {
+        return oldItem.user.handle == newItem.user.handle
     }
 
-    override fun areContentsTheSame(
-        oldItem: Pair<UserEntity, RatingChangeEntity?>,
-        newItem: Pair<UserEntity, RatingChangeEntity?>
-    ): Boolean {
+    override fun areContentsTheSame(oldItem: UserRatingChanges, newItem: UserRatingChanges): Boolean {
         return oldItem == newItem
     }
 }

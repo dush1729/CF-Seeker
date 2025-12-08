@@ -2,8 +2,8 @@ package com.example.cfseeker.data.local
 
 import com.example.cfseeker.data.local.entity.RatingChangeEntity
 import com.example.cfseeker.data.local.entity.UserEntity
+import com.example.cfseeker.data.local.entity.UserRatingChanges
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabase): DatabaseService {
@@ -15,11 +15,7 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
         appDatabase.userDao().deleteUserAndRatingChanges(handle)
     }
 
-    override fun getAllUserRatingChanges(): Flow<List<Pair<UserEntity, RatingChangeEntity?>>> {
-        return flow {
-            val userRatingChanges = appDatabase.userDao().getAllUserRatingChanges()
-                .map { (user, ratingChanges) -> user to ratingChanges.lastOrNull() }
-            emit(userRatingChanges)
-        }
+    override fun getAllUserRatingChanges(): Flow<List<UserRatingChanges>> {
+        return appDatabase.userDao().getAllUserRatingChanges()
     }
 }

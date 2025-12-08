@@ -6,6 +6,8 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import com.example.cfseeker.data.local.entity.RatingChangeEntity
 import com.example.cfseeker.data.local.entity.UserEntity
+import com.example.cfseeker.data.local.entity.UserRatingChanges
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserDao {
@@ -32,7 +34,12 @@ interface UserDao {
         deleteUser(handle)
         deleteRatingChanges(handle)
     }
-
-    @Query("SELECT * FROM user LEFT JOIN rating_change ON user.handle = rating_change.handle")
-    suspend fun getAllUserRatingChanges(): Map<UserEntity, List<RatingChangeEntity>>
+    @Transaction
+    @Query("""
+        SELECT user.* FROM user
+        LEFT JOIN rating_change ON user.handle = rating_change.handle
+        GROUP BY user.handle
+        ORDER BY MAX(rating_change.ratingUpdateTimeSeconds) DESC, user.handle ASC
+    """)
+    fun getAllUserRatingChanges(): Flow<List<UserRatingChanges>>
 }

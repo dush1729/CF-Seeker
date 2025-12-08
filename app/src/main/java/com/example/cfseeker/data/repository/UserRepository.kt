@@ -3,6 +3,7 @@ package com.example.cfseeker.data.repository
 import com.example.cfseeker.data.local.DatabaseService
 import com.example.cfseeker.data.local.entity.RatingChangeEntity
 import com.example.cfseeker.data.local.entity.UserEntity
+import com.example.cfseeker.data.local.entity.UserRatingChanges
 import com.example.cfseeker.data.remote.api.NetworkService
 import com.example.cfseeker.data.remote.model.RatingChange
 import com.example.cfseeker.data.remote.model.User
@@ -30,7 +31,7 @@ class UserRepository @Inject constructor(
         db.deleteUser(handle)
     }
 
-    fun getAllUserRatingChanges(): Flow<List<Pair<UserEntity, RatingChangeEntity?>>> {
+    fun getAllUserRatingChanges(): Flow<List<UserRatingChanges>> {
         return db.getAllUserRatingChanges()
     }
 }
