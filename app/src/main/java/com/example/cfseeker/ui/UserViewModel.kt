@@ -2,11 +2,10 @@ package com.example.cfseeker.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cfseeker.data.local.entity.RatingChangeEntity
-import com.example.cfseeker.data.local.entity.UserEntity
 import com.example.cfseeker.data.local.entity.UserRatingChanges
 import com.example.cfseeker.data.repository.UserRepository
 import com.example.cfseeker.ui.base.UiState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,6 +14,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@HiltViewModel
 class UserViewModel @Inject constructor(
     private val repository: UserRepository,
 ): ViewModel() {

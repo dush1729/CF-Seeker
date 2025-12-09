@@ -2,6 +2,7 @@ package com.example.cfseeker
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -10,21 +11,18 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.cfseeker.databinding.ActivityMainBinding
-import com.example.cfseeker.di.component.DaggerActivityComponent
-import com.example.cfseeker.di.module.ActivityModule
 import com.example.cfseeker.ui.UserAdapter
 import com.example.cfseeker.ui.UserViewModel
 import com.example.cfseeker.ui.base.UiState
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    @Inject
-    lateinit var viewModel: UserViewModel
+    private val viewModel: UserViewModel by viewModels()
     private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        injectDependencies()
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -57,14 +55,5 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    private fun injectDependencies() {
-        DaggerActivityComponent
-            .builder()
-            .activityModule(ActivityModule(this))
-            .applicationComponent((application as MyApplication).applicationComponent)
-            .build()
-            .inject(this)
     }
 }

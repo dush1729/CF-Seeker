@@ -1,19 +1,23 @@
 package com.example.cfseeker.di.module
 
+import android.content.Context
 import androidx.room.Room
-import com.example.cfseeker.MyApplication
 import com.example.cfseeker.data.local.AppDatabase
 import com.example.cfseeker.data.local.AppDatabaseService
 import com.example.cfseeker.data.local.DatabaseService
 import com.example.cfseeker.data.remote.api.NetworkService
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @Module
-class ApplicationModule(private val application: MyApplication) {
+@InstallIn(SingletonComponent::class)
+object ApplicationModule {
     @Singleton
     @Provides
     fun provideNetworkService(): NetworkService {
@@ -27,9 +31,9 @@ class ApplicationModule(private val application: MyApplication) {
 
     @Singleton
     @Provides
-    fun provideAppDatabase(): AppDatabase {
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(
-            application.applicationContext,
+            context,
             AppDatabase::class.java,
             "app_database")
             .build()
