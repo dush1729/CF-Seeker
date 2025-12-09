@@ -32,7 +32,7 @@ android {
         }
     }
     buildFeatures {
-        viewBinding = true
+        viewBinding = false
         compose = true
     }
     compileOptions {
