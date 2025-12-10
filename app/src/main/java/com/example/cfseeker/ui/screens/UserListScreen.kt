@@ -2,7 +2,10 @@ package com.example.cfseeker.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -91,7 +94,7 @@ fun UserListScreen(
             is UiState.Success -> {
                 UserList(
                     users = state.data,
-                    modifier = Modifier.padding(paddingValues)
+                    contentPadding = paddingValues
                 )
             }
         }
@@ -179,10 +182,17 @@ private fun AddUserBottomSheet(
 @Composable
 private fun UserList(
     users: List<UserRatingChanges>,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(
+            start = contentPadding.calculateStartPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
+            top = contentPadding.calculateTopPadding(),
+            end = contentPadding.calculateEndPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
+            bottom = contentPadding.calculateBottomPadding() + 80.dp
+        )
     ) {
         items(
             items = users,
