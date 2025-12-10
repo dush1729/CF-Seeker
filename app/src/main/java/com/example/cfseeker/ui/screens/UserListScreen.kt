@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -46,7 +47,9 @@ import com.example.cfseeker.ui.base.UiState
 import com.example.cfseeker.ui.components.ErrorState
 import com.example.cfseeker.ui.components.LoadingState
 import com.example.cfseeker.ui.components.UserCard
+import com.example.cfseeker.ui.components.UserDetailsBottomSheet
 import com.example.cfseeker.ui.theme.CFSeekerTheme
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,11 +58,14 @@ fun UserListScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     var showBottomSheet by remember { mutableStateOf(false) }
     var userHandle by remember { mutableStateOf("") }
+
+    var selectedUser by remember { mutableStateOf<UserEntity?>(null) }
 
     Scaffold(
         modifier = modifier
@@ -94,7 +100,10 @@ fun UserListScreen(
             is UiState.Success -> {
                 UserList(
                     users = state.data,
-                    contentPadding = paddingValues
+                    contentPadding = paddingValues,
+                    onUserCardClick = { user ->
+                        selectedUser = user
+                    }
                 )
             }
         }
@@ -111,13 +120,37 @@ fun UserListScreen(
                 userHandle = userHandle,
                 onUserHandleChange = { userHandle = it },
                 onAddClick = {
-                    viewModel.fetchUser(userHandle)
+                    scope.launch {
+                        viewModel.fetchUser(userHandle)
+                    }
                     showBottomSheet = false
                     userHandle = ""
                 },
                 onCancelClick = {
                     showBottomSheet = false
                     userHandle = ""
+                }
+            )
+        }
+    }
+
+    selectedUser?.let { user ->
+        ModalBottomSheet(
+            onDismissRequest = {
+                selectedUser = null
+            }
+        ) {
+            UserDetailsBottomSheet(
+                user = user,
+                onSyncClick = {
+                    viewModel.fetchUser(user.handle)
+                    selectedUser = null
+                },
+                onDeleteClick = {
+                    viewModel.deleteUser(user.handle)
+                },
+                onDismiss = {
+                    selectedUser = null
                 }
             )
         }
@@ -183,6 +216,7 @@ private fun AddUserBottomSheet(
 private fun UserList(
     users: List<UserRatingChanges>,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    onUserCardClick: (UserEntity) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -198,7 +232,10 @@ private fun UserList(
             items = users,
             key = { it.user.handle }
         ) { userRatingChange ->
-            UserCard(userRatingChange = userRatingChange)
+            UserCard(
+                userRatingChange = userRatingChange,
+                onClick = onUserCardClick
+            )
         }
     }
 }

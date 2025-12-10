@@ -36,9 +36,13 @@ class UserViewModel @Inject constructor(
         }
     }
 
-    fun fetchUser(handle: String) {
+    suspend fun fetchUser(handle: String) {
+        repository.fetchUser(handle)
+    }
+
+    fun deleteUser(handle: String) {
         viewModelScope.launch {
-            repository.fetchUser(handle)
+            repository.deleteUser(handle)
         }
     }
 }
