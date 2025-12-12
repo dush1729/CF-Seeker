@@ -20,3 +20,8 @@ local.properties
 
 # Firebase
 google-services.json
+
+# Keystore
+*.jks
+*.keystore
+keystore.properties
