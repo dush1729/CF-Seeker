@@ -25,3 +25,6 @@ google-services.json
 *.jks
 *.keystore
 keystore.properties
+
+# Android App Bundles
+*.aab
