@@ -160,7 +160,7 @@ fun UserListScreen(
                 userHandle = userHandle,
                 onUserHandleChange = { userHandle = it },
                 onAddClick = {
-                    viewModel.fetchUser(userHandle)
+                    viewModel.fetchUser(userHandle.trim())
                     showBottomSheet = false
                     userHandle = ""
                 },
