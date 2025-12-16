@@ -41,7 +41,7 @@ interface UserDao {
         LEFT JOIN rating_change ON user.handle = rating_change.handle
         GROUP BY user.handle
         ORDER BY
-            CASE WHEN :sortBy = 'RATING_UPDATE' THEN MAX(rating_change.ratingUpdateTimeSeconds) END DESC,
+            CASE WHEN :sortBy = 'LAST_RATING_UPDATE' THEN MAX(rating_change.ratingUpdateTimeSeconds) END DESC,
             CASE WHEN :sortBy = 'RATING' THEN user.rating END DESC,
             CASE WHEN :sortBy = 'LAST_SYNC' THEN user.lastSync END DESC,
             user.handle ASC
