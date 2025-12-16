@@ -15,9 +15,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -44,6 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
+import com.dush1729.cfseeker.ui.SortOption
 import com.dush1729.cfseeker.ui.UserViewModel
 import com.dush1729.cfseeker.ui.base.UiState
 import com.dush1729.cfseeker.ui.components.ErrorState
@@ -60,12 +65,14 @@ fun UserListScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val currentSortOption by viewModel.sortOption.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     var showBottomSheet by remember { mutableStateOf(false) }
     var userHandle by remember { mutableStateOf("") }
+    var showSortMenu by remember { mutableStateOf(false) }
 
     var selectedUser by remember { mutableStateOf<UserEntity?>(null) }
 
@@ -76,7 +83,37 @@ fun UserListScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Users") },
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                actions = {
+                    FilledTonalButton(
+                        onClick = { showSortMenu = true },
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Sort,
+                            contentDescription = "Sort",
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = "Sort by ${currentSortOption.displayName}",
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showSortMenu,
+                        onDismissRequest = { showSortMenu = false }
+                    ) {
+                        SortOption.entries.forEach { sortOption ->
+                            DropdownMenuItem(
+                                text = { Text(sortOption.displayName) },
+                                onClick = {
+                                    viewModel.setSortOption(sortOption)
+                                    showSortMenu = false
+                                }
+                            )
+                        }
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -102,6 +139,7 @@ fun UserListScreen(
             is UiState.Success -> {
                 UserList(
                     users = state.data,
+                    sortOption = currentSortOption,
                     contentPadding = paddingValues,
                     onUserCardClick = { user ->
                         selectedUser = user
@@ -261,6 +299,7 @@ private fun AddUserBottomSheet(
 @Composable
 private fun UserList(
     users: List<UserRatingChanges>,
+    sortOption: SortOption = SortOption.LAST_RATING_UPDATE,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     onUserCardClick: (UserEntity) -> Unit = {},
     modifier: Modifier = Modifier
@@ -280,6 +319,7 @@ private fun UserList(
         ) { userRatingChange ->
             UserCard(
                 userRatingChange = userRatingChange,
+                sortOption = sortOption,
                 onClick = onUserCardClick
             )
         }

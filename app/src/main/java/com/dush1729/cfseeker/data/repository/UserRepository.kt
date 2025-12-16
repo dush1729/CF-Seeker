@@ -8,6 +8,7 @@ import com.dush1729.cfseeker.data.remote.api.NetworkService
 import com.dush1729.cfseeker.data.remote.api.safeApiCall
 import com.dush1729.cfseeker.data.remote.model.RatingChange
 import com.dush1729.cfseeker.data.remote.model.User
+import com.dush1729.cfseeker.ui.SortOption
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -37,8 +38,8 @@ class UserRepository @Inject constructor(
         db.deleteUser(handle)
     }
 
-    fun getAllUserRatingChanges(): Flow<List<UserRatingChanges>> {
-        return db.getAllUserRatingChanges()
+    fun getAllUserRatingChanges(sortBy: String = SortOption.LAST_RATING_UPDATE.value): Flow<List<UserRatingChanges>> {
+        return db.getAllUserRatingChanges(sortBy)
     }
 }
 

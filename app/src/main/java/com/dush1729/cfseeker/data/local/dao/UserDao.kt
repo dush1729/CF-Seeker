@@ -7,6 +7,7 @@ import androidx.room.Upsert
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
+import com.dush1729.cfseeker.ui.SortOption
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -39,7 +40,11 @@ interface UserDao {
         SELECT user.* FROM user
         LEFT JOIN rating_change ON user.handle = rating_change.handle
         GROUP BY user.handle
-        ORDER BY MAX(rating_change.ratingUpdateTimeSeconds) DESC, user.handle ASC
+        ORDER BY
+            CASE WHEN :sortBy = 'RATING_UPDATE' THEN MAX(rating_change.ratingUpdateTimeSeconds) END DESC,
+            CASE WHEN :sortBy = 'RATING' THEN user.rating END DESC,
+            CASE WHEN :sortBy = 'LAST_SYNC' THEN user.lastSync END DESC,
+            user.handle ASC
     """)
-    fun getAllUserRatingChanges(): Flow<List<UserRatingChanges>>
+    fun getAllUserRatingChanges(sortBy: String = SortOption.LAST_RATING_UPDATE.value): Flow<List<UserRatingChanges>>
 }

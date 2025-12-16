@@ -26,6 +26,7 @@ import com.dush1729.cfseeker.R
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
+import com.dush1729.cfseeker.ui.SortOption
 import com.dush1729.cfseeker.ui.theme.CFSeekerTheme
 import com.dush1729.cfseeker.ui.theme.RatingNegative
 import com.dush1729.cfseeker.ui.theme.RatingPositive
@@ -34,6 +35,7 @@ import com.dush1729.cfseeker.utils.toRelativeTime
 @Composable
 fun UserCard(
     userRatingChange: UserRatingChanges,
+    sortOption: SortOption = SortOption.LAST_RATING_UPDATE,
     onClick: (UserEntity) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -77,11 +79,19 @@ fun UserCard(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                val updateText = latestRatingChange?.ratingUpdateTimeSeconds?.toRelativeTime()
-                    ?: "No rating update"
-                // Last rating update
+                val (lastUpdateTitle, lastUpdatedTime) = when (sortOption) {
+                    SortOption.LAST_SYNC -> {
+                        val syncTime = userRatingChange.user.lastSync.toRelativeTime()
+                        "Last sync" to syncTime
+                    }
+                    SortOption.LAST_RATING_UPDATE, SortOption.RATING -> {
+                        val updateTime = latestRatingChange?.ratingUpdateTimeSeconds?.toRelativeTime()
+                            ?: "No rating update"
+                        "Last rating update" to updateTime
+                    }
+                }
                 Text(
-                    text = updateText,
+                    text = "$lastUpdateTitle: $lastUpdatedTime",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

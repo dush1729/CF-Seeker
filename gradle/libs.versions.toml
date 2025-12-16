@@ -12,6 +12,7 @@ lifecycleViewmodelKtx = "2.10.0"
 material = "1.13.0"
 activity = "1.12.1"
 constraintlayout = "2.2.1"
+materialIconsExtended = "1.7.8"
 retrofit = "3.0.0"
 roomRuntime = "2.8.4"
 composeBom = "2025.01.00"
@@ -22,6 +23,7 @@ firebaseBom = "33.7.0"
 googleServices = "4.4.2"
 
 [libraries]
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }

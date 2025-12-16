@@ -10,9 +10,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+enum class SortOption(val value: String, val displayName: String) {
+    LAST_RATING_UPDATE("LAST_RATING_UPDATE", "default"),
+    RATING("RATING", "rating"),
+    LAST_SYNC("LAST_SYNC", "last sync")
+}
 
 @HiltViewModel
 class UserViewModel @Inject constructor(
@@ -22,10 +29,15 @@ class UserViewModel @Inject constructor(
         UiState.Success(emptyList()))
     val uiState = _uiState.asStateFlow()
 
+    private val _sortOption = MutableStateFlow(SortOption.LAST_RATING_UPDATE)
+    val sortOption = _sortOption.asStateFlow()
+
     init {
         viewModelScope.launch {
-            repository
-                .getAllUserRatingChanges()
+            _sortOption
+                .flatMapLatest { sortOption ->
+                    repository.getAllUserRatingChanges(sortOption.value)
+                }
                 .flowOn(Dispatchers.IO)
                 .catch {
                     _uiState.value = UiState.Error(it.message ?: "")
@@ -34,6 +46,10 @@ class UserViewModel @Inject constructor(
                     _uiState.value = UiState.Success(it)
                 }
         }
+    }
+
+    fun setSortOption(sortOption: SortOption) {
+        _sortOption.value = sortOption
     }
 
     suspend fun fetchUser(handle: String) {
