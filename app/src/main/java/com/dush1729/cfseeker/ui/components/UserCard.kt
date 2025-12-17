@@ -30,6 +30,7 @@ import com.dush1729.cfseeker.ui.SortOption
 import com.dush1729.cfseeker.ui.theme.CFSeekerTheme
 import com.dush1729.cfseeker.ui.theme.RatingNegative
 import com.dush1729.cfseeker.ui.theme.RatingPositive
+import com.dush1729.cfseeker.utils.getRatingColor
 import com.dush1729.cfseeker.utils.toRelativeTime
 
 @Composable
@@ -75,6 +76,7 @@ fun UserCard(
                 Text(
                     text = userRatingChange.user.handle,
                     style = MaterialTheme.typography.titleMedium,
+                    color = getRatingColor(userRatingChange.user.rating),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -124,7 +126,7 @@ fun UserCard(
                     Text(
                         text = ratingChange.newRating.toString(),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = getRatingColor(ratingChange.newRating)
                     )
                 }
             }

@@ -1,5 +1,15 @@
 package com.dush1729.cfseeker.utils
 
+import androidx.compose.ui.graphics.Color
+import com.dush1729.cfseeker.ui.theme.CFCandidateMaster
+import com.dush1729.cfseeker.ui.theme.CFExpert
+import com.dush1729.cfseeker.ui.theme.CFGrandmaster
+import com.dush1729.cfseeker.ui.theme.CFInternationalGrandmaster
+import com.dush1729.cfseeker.ui.theme.CFInternationalMaster
+import com.dush1729.cfseeker.ui.theme.CFMaster
+import com.dush1729.cfseeker.ui.theme.CFNewbie
+import com.dush1729.cfseeker.ui.theme.CFPupil
+import com.dush1729.cfseeker.ui.theme.CFSpecialist
 import kotlin.math.abs
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -52,5 +62,20 @@ fun <T: Number> T.toRelativeTime(): String {
         return "In $relativeTime"
     } else {
         "$relativeTime ago"
+    }
+}
+
+fun getRatingColor(rating: Int?): Color {
+    return when {
+        rating == null -> CFNewbie
+        rating < 1200 -> CFNewbie
+        rating < 1400 -> CFPupil
+        rating < 1600 -> CFSpecialist
+        rating < 1900 -> CFExpert
+        rating < 2100 -> CFCandidateMaster
+        rating < 2300 -> CFMaster
+        rating < 2400 -> CFInternationalMaster
+        rating < 3000 -> CFGrandmaster
+        else -> CFInternationalGrandmaster
     }
 }

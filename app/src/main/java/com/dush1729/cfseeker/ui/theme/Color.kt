@@ -51,3 +51,15 @@ val md_theme_dark_onSurfaceVariant = Color(0xFFCAC4D0)
 // Custom colors for rating changes
 val RatingPositive = Color(0xFF4CAF50) // Green for positive rating change
 val RatingNegative = Color(0xFFF44336) // Red for negative rating change
+
+// Codeforces rating colors
+val CFNewbie = Color(0xFF808080) // Gray - rating < 1200
+val CFPupil = Color(0xFF008000) // Green - 1200 <= rating < 1400
+val CFSpecialist = Color(0xFF03A89E) // Cyan - 1400 <= rating < 1600
+val CFExpert = Color(0xFF0000FF) // Blue - 1600 <= rating < 1900
+val CFCandidateMaster = Color(0xFFAA00AA) // Purple - 1900 <= rating < 2100
+val CFMaster = Color(0xFFFF8C00) // Orange - 2100 <= rating < 2300
+val CFInternationalMaster = Color(0xFFFF8C00) // Orange - 2300 <= rating < 2400
+val CFGrandmaster = Color(0xFFFF0000) // Red - 2400 <= rating < 3000
+val CFInternationalGrandmaster = Color(0xFFFF0000) // Red - rating >= 3000
+val CFLegendaryGrandmaster = Color(0xFFFF0000) // Red - rating >= 3000 (legendary)

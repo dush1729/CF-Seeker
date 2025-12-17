@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.dush1729.cfseeker.R
 import com.dush1729.cfseeker.data.local.entity.UserEntity
+import com.dush1729.cfseeker.utils.getRatingColor
 import com.dush1729.cfseeker.utils.toRelativeTime
 import kotlinx.coroutines.launch
 
@@ -75,13 +76,14 @@ fun UserDetailsBottomSheet(
                 Text(
                     text = user.handle,
                     style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = getRatingColor(user.rating)
                 )
                 user.rank?.let {
                     Text(
                         text = it,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = getRatingColor(user.rating)
                     )
                 }
             }
@@ -108,9 +110,9 @@ fun UserDetailsBottomSheet(
 
             // Stats Section
             SectionTitle("Stats")
-            user.rating?.let { DetailRow("Rating", it.toString()) }
-            user.maxRating?.let { DetailRow("Max Rating", it.toString()) }
-            user.maxRank?.let { DetailRow("Max Rank", it) }
+            user.rating?.let { DetailRow("Rating", it.toString(), getRatingColor(it)) }
+            user.maxRating?.let { DetailRow("Max Rating", it.toString(), getRatingColor(it)) }
+            user.maxRank?.let { DetailRow("Max Rank", it, getRatingColor(user.maxRating)) }
             DetailRow("Contribution", user.contribution.toString())
             DetailRow("Friend of", "${user.friendOfCount} users")
 
@@ -209,7 +211,7 @@ private fun SectionTitle(title: String) {
 }
 
 @Composable
-private fun DetailRow(label: String, value: String) {
+private fun DetailRow(label: String, value: String, valueColor: androidx.compose.ui.graphics.Color? = null) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
@@ -224,6 +226,7 @@ private fun DetailRow(label: String, value: String) {
             text = value,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
+            color = valueColor ?: MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
     }
