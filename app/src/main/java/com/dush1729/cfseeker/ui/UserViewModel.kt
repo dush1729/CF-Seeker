@@ -14,7 +14,9 @@ import com.dush1729.cfseeker.ui.base.UiState
 import com.dush1729.cfseeker.worker.SyncUsersWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
@@ -52,6 +54,9 @@ class UserViewModel @Inject constructor(
     private val _syncProgress = MutableStateFlow<Pair<Int, Int>?>(null)
     val syncProgress = _syncProgress.asStateFlow()
 
+    private val _snackbarMessage = MutableSharedFlow<String>()
+    val snackbarMessage = _snackbarMessage.asSharedFlow()
+
     init {
         viewModelScope.launch {
             combine(_sortOption, _searchQuery) { sortOption, searchQuery ->
@@ -70,10 +75,14 @@ class UserViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            var wasRunning = false
             workManager.getWorkInfosForUniqueWorkFlow(SyncUsersWorker.WORK_NAME)
                 .collect { workInfos ->
                     val runningWork = workInfos.firstOrNull {
                         it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED
+                    }
+                    val completedWork = workInfos.firstOrNull {
+                        it.state == WorkInfo.State.SUCCEEDED || it.state == WorkInfo.State.FAILED
                     }
 
                     val isRunning = runningWork != null
@@ -84,8 +93,23 @@ class UserViewModel @Inject constructor(
                         val total = runningWork.progress.getInt(SyncUsersWorker.KEY_PROGRESS_TOTAL, 0)
                         _syncProgress.value = if (total > 0) Pair(current, total) else null
                         android.util.Log.d("UserViewModel", "Sync progress: $current/$total")
+                        wasRunning = true
                     } else {
                         _syncProgress.value = null
+
+                        // Show completion message when sync finishes
+                        if (wasRunning && completedWork != null) {
+                            when (completedWork.state) {
+                                WorkInfo.State.SUCCEEDED -> {
+                                    _snackbarMessage.emit("All users synced successfully")
+                                }
+                                WorkInfo.State.FAILED -> {
+                                    _snackbarMessage.emit("Sync failed")
+                                }
+                                else -> {}
+                            }
+                            wasRunning = false
+                        }
                     }
 
                     android.util.Log.d("UserViewModel", "Sync status: isRunning=$isRunning")
@@ -102,12 +126,22 @@ class UserViewModel @Inject constructor(
     }
 
     suspend fun fetchUser(handle: String) {
-        repository.fetchUser(handle)
+        try {
+            repository.fetchUser(handle)
+            _snackbarMessage.emit("Successfully synced $handle")
+        } catch (e: Exception) {
+            _snackbarMessage.emit("Failed to sync $handle: ${e.message}")
+        }
     }
 
     fun deleteUser(handle: String) {
         viewModelScope.launch {
-            repository.deleteUser(handle)
+            try {
+                repository.deleteUser(handle)
+                _snackbarMessage.emit("Deleted $handle")
+            } catch (e: Exception) {
+                _snackbarMessage.emit("Failed to delete $handle: ${e.message}")
+            }
         }
     }
 
