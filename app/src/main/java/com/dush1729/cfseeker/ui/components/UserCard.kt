@@ -86,7 +86,7 @@ fun UserCard(
                         val syncTime = userRatingChange.user.lastSync.toRelativeTime()
                         "Last sync" to syncTime
                     }
-                    SortOption.LAST_RATING_UPDATE, SortOption.RATING -> {
+                    else -> {
                         val updateTime = latestRatingChange?.ratingUpdateTimeSeconds?.toRelativeTime()
                             ?: "No rating update"
                         "Last rating update" to updateTime

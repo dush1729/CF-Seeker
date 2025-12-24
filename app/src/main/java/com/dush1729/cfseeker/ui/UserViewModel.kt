@@ -25,8 +25,9 @@ import javax.inject.Inject
 
 enum class SortOption(val value: String, val displayName: String) {
     LAST_RATING_UPDATE("LAST_RATING_UPDATE", "default"),
+    HANDLE("HANDLE", "handle"),
     RATING("RATING", "rating"),
-    LAST_SYNC("LAST_SYNC", "last sync")
+    LAST_SYNC("LAST_SYNC", "last sync"),
 }
 
 @HiltViewModel

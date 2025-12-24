@@ -44,6 +44,7 @@ interface UserDao {
             CASE WHEN :sortBy = 'LAST_RATING_UPDATE' THEN MAX(rating_change.ratingUpdateTimeSeconds) END DESC,
             CASE WHEN :sortBy = 'RATING' THEN user.rating END DESC,
             CASE WHEN :sortBy = 'LAST_SYNC' THEN user.lastSync END DESC,
+            CASE WHEN :sortBy = 'HANDLE' THEN LOWER(user.handle) END ASC,
             user.handle ASC
     """)
     fun getAllUserRatingChanges(sortBy: String = SortOption.LAST_RATING_UPDATE.value): Flow<List<UserRatingChanges>>
