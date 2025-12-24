@@ -2,6 +2,7 @@ package com.dush1729.cfseeker.di.module
 
 import android.content.Context
 import androidx.room.Room
+import androidx.work.WorkManager
 import com.dush1729.cfseeker.data.local.AppDatabase
 import com.dush1729.cfseeker.data.local.AppDatabaseService
 import com.dush1729.cfseeker.data.local.DatabaseService
@@ -43,5 +44,11 @@ object ApplicationModule {
     @Provides
     fun provideDatabaseService(appDatabase: AppDatabase): DatabaseService {
         return AppDatabaseService(appDatabase)
+    }
+
+    @Singleton
+    @Provides
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
+        return WorkManager.getInstance(context)
     }
 }

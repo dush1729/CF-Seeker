@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,6 +22,8 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,11 +44,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
@@ -68,7 +78,10 @@ fun UserListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentSortOption by viewModel.sortOption.collectAsStateWithLifecycle()
+    val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
+    val syncProgress by viewModel.syncProgress.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
@@ -77,6 +90,32 @@ fun UserListScreen(
     var showSortMenu by remember { mutableStateOf(false) }
 
     var selectedUser by remember { mutableStateOf<UserEntity?>(null) }
+
+    // Permission launcher for Android 13+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            viewModel.syncAllUsers()
+        } else {
+            android.util.Log.w("UserListScreen", "Notification permission denied")
+        }
+    }
+
+    fun requestNotificationPermissionAndSync() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)) {
+                PackageManager.PERMISSION_GRANTED -> {
+                    viewModel.syncAllUsers()
+                }
+                else -> {
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        } else {
+            viewModel.syncAllUsers()
+        }
+    }
 
     Scaffold(
         modifier = modifier
@@ -127,10 +166,38 @@ fun UserListScreen(
                     icon = { Icon(Icons.Filled.Add, contentDescription = "Add User") },
                     text = { Text("Add User") }
                 )
-                FloatingActionButton(
-                    onClick = {},
-                    content = { Icon(Icons.Filled.Sync, contentDescription = "Sync users") },
-                )
+                BadgedBox(
+                    badge = {
+                        syncProgress?.let { (current, total) ->
+                            Badge(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.offset(x = (-8).dp, y = 8.dp)
+                            ) {
+                                Text(
+                                    text = "$current/$total",
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
+                        }
+                    }
+                ) {
+                    FloatingActionButton(
+                        onClick = { requestNotificationPermissionAndSync() },
+                        containerColor = if (isSyncing)
+                            MaterialTheme.colorScheme.secondaryContainer
+                        else
+                            MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        if (isSyncing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(Icons.Filled.Sync, contentDescription = "Sync users")
+                        }
+                    }
+                }
             }
         }
     ) { paddingValues ->

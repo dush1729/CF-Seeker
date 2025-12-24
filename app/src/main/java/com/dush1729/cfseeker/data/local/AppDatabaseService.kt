@@ -18,4 +18,8 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
     override fun getAllUserRatingChanges(sortBy: String): Flow<List<UserRatingChanges>> {
         return appDatabase.userDao().getAllUserRatingChanges(sortBy)
     }
+
+    override suspend fun getAllUserHandles(): List<String> {
+        return appDatabase.userDao().getAllUserHandles()
+    }
 }

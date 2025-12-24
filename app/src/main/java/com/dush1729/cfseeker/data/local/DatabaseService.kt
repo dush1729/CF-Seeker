@@ -10,4 +10,5 @@ interface DatabaseService {
     suspend fun addUser(user: UserEntity, ratingChanges: List<RatingChangeEntity>)
     suspend fun deleteUser(handle: String)
     fun getAllUserRatingChanges(sortBy: String = SortOption.LAST_RATING_UPDATE.value): Flow<List<UserRatingChanges>>
+    suspend fun getAllUserHandles(): List<String>
 }

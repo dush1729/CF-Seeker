@@ -47,4 +47,7 @@ interface UserDao {
             user.handle ASC
     """)
     fun getAllUserRatingChanges(sortBy: String = SortOption.LAST_RATING_UPDATE.value): Flow<List<UserRatingChanges>>
+
+    @Query("SELECT handle FROM user")
+    suspend fun getAllUserHandles(): List<String>
 }
