@@ -467,7 +467,8 @@ private fun UserList(
             UserCard(
                 userRatingChange = userRatingChange,
                 sortOption = sortOption,
-                onClick = onUserCardClick
+                onClick = onUserCardClick,
+                modifier = Modifier.animateItem()
             )
         }
     }
