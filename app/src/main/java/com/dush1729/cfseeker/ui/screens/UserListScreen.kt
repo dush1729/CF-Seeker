@@ -37,6 +37,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -44,8 +45,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -190,6 +194,54 @@ fun UserListScreen(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // Sync button - only show when user list size > 1
+                if (userCount > 1) {
+                    TooltipBox(
+                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                        tooltip = {
+                            PlainTooltip {
+                                Text("" +
+                                        "Sync all users\n" +
+                                        "Limited usage\n" +
+                                        "(High API load)")
+                            }
+                        },
+                        state = rememberTooltipState()
+                    ) {
+                        BadgedBox(
+                            badge = {
+                                syncProgress?.let { (current, total) ->
+                                    Badge(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.offset(x = (-8).dp, y = 8.dp)
+                                    ) {
+                                        Text(
+                                            text = "$current/$total",
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                    }
+                                }
+                            }
+                        ) {
+                            FloatingActionButton(
+                                onClick = { requestNotificationPermissionAndSync() },
+                                containerColor = if (isSyncing)
+                                    MaterialTheme.colorScheme.secondaryContainer
+                                else
+                                    MaterialTheme.colorScheme.primaryContainer
+                            ) {
+                                if (isSyncing) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        strokeWidth = 2.dp
+                                    )
+                                } else {
+                                    Icon(Icons.Filled.Sync, contentDescription = "Sync users")
+                                }
+                            }
+                        }
+                    }
+                }
                 ExtendedFloatingActionButton(
                     onClick = {
                         showBottomSheet = true
@@ -197,41 +249,6 @@ fun UserListScreen(
                     icon = { Icon(Icons.Filled.Add, contentDescription = "Add User") },
                     text = { Text("Add User") }
                 )
-                // Sync button - only show when user list size > 1
-                if (userCount > 1) {
-                    BadgedBox(
-                        badge = {
-                            syncProgress?.let { (current, total) ->
-                                Badge(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.offset(x = (-8).dp, y = 8.dp)
-                                ) {
-                                    Text(
-                                        text = "$current/$total",
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                }
-                            }
-                        }
-                    ) {
-                        FloatingActionButton(
-                            onClick = { requestNotificationPermissionAndSync() },
-                            containerColor = if (isSyncing)
-                                MaterialTheme.colorScheme.secondaryContainer
-                            else
-                                MaterialTheme.colorScheme.primaryContainer
-                        ) {
-                            if (isSyncing) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    strokeWidth = 2.dp
-                                )
-                            } else {
-                                Icon(Icons.Filled.Sync, contentDescription = "Sync users")
-                            }
-                        }
-                    }
-                }
             }
         }
     ) { paddingValues ->
