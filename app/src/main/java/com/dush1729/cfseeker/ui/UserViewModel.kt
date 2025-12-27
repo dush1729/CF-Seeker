@@ -126,7 +126,7 @@ class UserViewModel @Inject constructor(
                         val current = runningWork.progress.getInt(SyncUsersWorker.KEY_PROGRESS_CURRENT, 0)
                         val total = runningWork.progress.getInt(SyncUsersWorker.KEY_PROGRESS_TOTAL, 0)
                         _syncProgress.value = if (total > 0) Pair(current, total) else null
-                        android.util.Log.d("UserViewModel", "Sync progress: $current/$total")
+                        crashlyticsService.log("UserViewModel: Sync progress: $current/$total")
                         wasRunning = true
                     } else {
                         _syncProgress.value = null
@@ -146,7 +146,7 @@ class UserViewModel @Inject constructor(
                         }
                     }
 
-                    android.util.Log.d("UserViewModel", "Sync status: isRunning=$isRunning")
+                    crashlyticsService.log("UserViewModel: Sync status: isRunning=$isRunning")
                 }
         }
     }
@@ -190,7 +190,7 @@ class UserViewModel @Inject constructor(
     }
 
     fun syncAllUsers() {
-        android.util.Log.d("UserViewModel", "syncAllUsers called")
+        crashlyticsService.log("UserViewModel: syncAllUsers called")
         analyticsService.logBulkSyncStarted()
 
         val syncWorkRequest = OneTimeWorkRequestBuilder<SyncUsersWorker>()
@@ -207,11 +207,16 @@ class UserViewModel @Inject constructor(
             syncWorkRequest
         )
 
-        android.util.Log.d("UserViewModel", "Work enqueued with ID: ${syncWorkRequest.id}")
+        crashlyticsService.log("UserViewModel: Work enqueued with ID: ${syncWorkRequest.id}")
     }
 
     // Remote Config feature flags
     fun isAddUserEnabled() = remoteConfigService.isAddUserEnabled()
     fun isSyncAllUsersEnabled() = remoteConfigService.isSyncAllUsersEnabled()
     fun isSyncUserEnabled() = remoteConfigService.isSyncUserEnabled()
+
+    // Crashlytics logging
+    fun logToCrashlytics(message: String) {
+        crashlyticsService.log(message)
+    }
 }

@@ -1,6 +1,5 @@
 package com.dush1729.cfseeker.data.remote.config
 
-import android.util.Log
 import com.dush1729.cfseeker.BuildConfig
 import com.dush1729.cfseeker.R
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
@@ -38,7 +37,7 @@ class FirebaseRemoteConfigService @Inject constructor(
         } catch (e: Exception) {
             crashlyticsService.logException(e)
             crashlyticsService.setCustomKey("operation", "remote_config_fetch")
-            Log.e("RemoteConfig", "Error fetching remote config", e)
+            crashlyticsService.log("RemoteConfig: Error fetching remote config - ${e.message}")
             false
         }
     }

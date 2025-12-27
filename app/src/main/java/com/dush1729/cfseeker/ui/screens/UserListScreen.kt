@@ -129,7 +129,7 @@ fun UserListScreen(
         if (isGranted) {
             viewModel.syncAllUsers()
         } else {
-            android.util.Log.w("UserListScreen", "Notification permission denied")
+            viewModel.logToCrashlytics("UserListScreen: Notification permission denied")
         }
     }
 

@@ -38,7 +38,7 @@ class SyncUsersWorker @AssistedInject constructor(
     }
 
     override suspend fun doWork(): Result {
-        android.util.Log.d("SyncUsersWorker", "doWork() started")
+        crashlyticsService.log("SyncUsersWorker: doWork() started")
         val startTime = System.currentTimeMillis()
         var successCount = 0
         var failureCount = 0
@@ -46,10 +46,10 @@ class SyncUsersWorker @AssistedInject constructor(
         return try {
             // Get all user handles from database
             val userHandles = repository.getAllUserHandles()
-            android.util.Log.d("SyncUsersWorker", "Found ${userHandles.size} users to sync")
+            crashlyticsService.log("SyncUsersWorker: Found ${userHandles.size} users to sync")
 
             if (userHandles.isEmpty()) {
-                android.util.Log.d("SyncUsersWorker", "No users to sync, returning success")
+                crashlyticsService.log("SyncUsersWorker: No users to sync, returning success")
                 analyticsService.logBulkSyncCompleted(
                     durationMs = System.currentTimeMillis() - startTime,
                     userCount = 0,
@@ -68,7 +68,7 @@ class SyncUsersWorker @AssistedInject constructor(
             // Sync each user with 5 second delay
             userHandles.forEachIndexed { index, handle ->
                 try {
-                    android.util.Log.d("SyncUsersWorker", "Syncing user $handle (${index + 1}/${userHandles.size})")
+                    crashlyticsService.log("SyncUsersWorker: Syncing user $handle (${index + 1}/${userHandles.size})")
 
                     // Update progress data
                     val progressData = Data.Builder()
@@ -83,7 +83,7 @@ class SyncUsersWorker @AssistedInject constructor(
                     // Fetch user data
                     repository.fetchUser(handle)
                     successCount++
-                    android.util.Log.d("SyncUsersWorker", "Successfully synced $handle")
+                    crashlyticsService.log("SyncUsersWorker: Successfully synced $handle")
 
                     // Wait 5 seconds before next user (except for last user)
                     if (index < userHandles.size - 1) {
@@ -96,14 +96,13 @@ class SyncUsersWorker @AssistedInject constructor(
                     crashlyticsService.setCustomKey("user_handle", handle)
                     crashlyticsService.setCustomKey("operation", "doWork")
                     crashlyticsService.setCustomKey("sync_progress", "${index + 1}/${userHandles.size}")
-                    android.util.Log.e("SyncUsersWorker", "Failed to sync $handle", e)
-                    e.printStackTrace()
+                    crashlyticsService.log("SyncUsersWorker: Failed to sync $handle - ${e.message}")
                 }
             }
 
             // Show completion notification
             setForeground(createCompletionNotification(userHandles.size))
-            android.util.Log.d("SyncUsersWorker", "Sync completed successfully")
+            crashlyticsService.log("SyncUsersWorker: Sync completed successfully (success: $successCount, failed: $failureCount)")
 
             // Log analytics
             val duration = System.currentTimeMillis() - startTime
@@ -120,8 +119,7 @@ class SyncUsersWorker @AssistedInject constructor(
             crashlyticsService.setCustomKey("operation", "doWorkWhole")
             crashlyticsService.setCustomKey("success_count", successCount)
             crashlyticsService.setCustomKey("failure_count", failureCount)
-            android.util.Log.e("SyncUsersWorker", "doWork() failed", e)
-            e.printStackTrace()
+            crashlyticsService.log("SyncUsersWorker: doWorkWhole failed - ${e.message}")
 
             // Log analytics for failure
             val duration = System.currentTimeMillis() - startTime
