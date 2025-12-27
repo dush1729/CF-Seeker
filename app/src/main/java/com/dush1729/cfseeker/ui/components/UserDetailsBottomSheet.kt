@@ -167,6 +167,7 @@ fun UserDetailsBottomSheet(
                         }
                     }
                 },
+                enabled = !isSyncing,
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = MaterialTheme.colorScheme.error
