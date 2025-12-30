@@ -38,6 +38,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -57,6 +59,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -68,6 +71,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
@@ -367,7 +372,10 @@ fun UserListScreen(
     }
 
     if (showBottomSheet) {
+        val sheetState = rememberModalBottomSheetState()
+
         ModalBottomSheet(
+            sheetState = sheetState,
             onDismissRequest = {
                 showBottomSheet = false
                 userHandle = ""
@@ -384,7 +392,8 @@ fun UserListScreen(
                 onCancelClick = {
                     showBottomSheet = false
                     userHandle = ""
-                }
+                },
+                sheetState = sheetState
             )
         }
     }
@@ -479,17 +488,29 @@ private fun EmptyUsersView(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddUserBottomSheet(
     userHandle: String,
     onUserHandleChange: (String) -> Unit,
     onAddClick: suspend () -> Unit,
     onCancelClick: () -> Unit,
+    sheetState: androidx.compose.material3.SheetState,
     modifier: Modifier = Modifier
 ) {
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(sheetState.currentValue) {
+        snapshotFlow { sheetState.currentValue }
+            .collect { value ->
+                if (value == SheetValue.Expanded) {
+                    focusRequester.requestFocus()
+                }
+            }
+    }
 
     Column(
         modifier = modifier
@@ -515,7 +536,9 @@ private fun AddUserBottomSheet(
             onValueChange = onUserHandleChange,
             label = { Text("User Handle") },
             placeholder = { Text("Enter Codeforces handle") },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester),
             singleLine = true,
             enabled = !isLoading,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
