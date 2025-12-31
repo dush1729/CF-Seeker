@@ -2,6 +2,8 @@ package com.dush1729.cfseeker.ui.screens
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.People
@@ -11,13 +13,12 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.ui.UserViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
@@ -25,7 +26,16 @@ fun MainScreen(
     analyticsService: AnalyticsService,
     modifier: Modifier = Modifier
 ) {
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val pagerState = rememberPagerState(pageCount = { 2 })
+    val scope = rememberCoroutineScope()
+
+    // Sync analytics when page changes
+    LaunchedEffect(pagerState.currentPage) {
+        when (pagerState.currentPage) {
+            0 -> analyticsService.logScreenView("users")
+            1 -> analyticsService.logScreenView("about")
+        }
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -34,33 +44,42 @@ fun MainScreen(
                 NavigationBarItem(
                     icon = { Icon(Icons.Filled.People, contentDescription = "Users") },
                     label = { Text("Users") },
-                    selected = selectedTabIndex == 0,
+                    selected = pagerState.currentPage == 0,
                     onClick = {
-                        selectedTabIndex = 0
-                        analyticsService.logScreenView("users")
+                        scope.launch {
+                            pagerState.animateScrollToPage(0)
+                        }
                     }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Filled.Info, contentDescription = "About") },
                     label = { Text("About") },
-                    selected = selectedTabIndex == 1,
+                    selected = pagerState.currentPage == 1,
                     onClick = {
-                        selectedTabIndex = 1
-                        analyticsService.logScreenView("about")
+                        scope.launch {
+                            pagerState.animateScrollToPage(1)
+                        }
                     }
                 )
             }
         }
     ) { paddingValues ->
-        when (selectedTabIndex) {
-            0 -> UserListScreen(
-                viewModel = userViewModel,
-                modifier = Modifier.padding(paddingValues)
-            )
-            1 -> AboutScreen(
-                analyticsService = analyticsService,
-                modifier = Modifier.padding(paddingValues)
-            )
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) { page ->
+            when (page) {
+                0 -> UserListScreen(
+                    viewModel = userViewModel,
+                    modifier = Modifier.fillMaxSize()
+                )
+                1 -> AboutScreen(
+                    analyticsService = analyticsService,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
     }
 }
