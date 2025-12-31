@@ -342,7 +342,7 @@ fun UserListScreen(
                 }
 
                 is UiState.Success -> {
-                    if (state.data.isEmpty()) {
+                    if (state.data.isEmpty() && searchQuery.isEmpty()) {
                         // Empty user list
                         EmptyUsersView(
                             onAddUserClick = {

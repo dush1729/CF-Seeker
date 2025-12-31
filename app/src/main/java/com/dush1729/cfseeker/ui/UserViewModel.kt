@@ -51,7 +51,7 @@ class UserViewModel @Inject constructor(
     private val remoteConfigService: RemoteConfigService
 ): ViewModel() {
     private val _uiState = MutableStateFlow<UiState<List<UserRatingChanges>>>(
-        UiState.Success(emptyList()))
+        UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
     private val _sortOption = MutableStateFlow(SortOption.LAST_RATING_UPDATE)
