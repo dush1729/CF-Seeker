@@ -35,4 +35,16 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
     override fun getAllContests(): Flow<List<ContestEntity>> {
         return appDatabase.contestDao().getAllContests()
     }
+
+    override fun getUpcomingContests(): Flow<List<ContestEntity>> {
+        return appDatabase.contestDao().getUpcomingContests()
+    }
+
+    override fun getPastContests(): Flow<List<ContestEntity>> {
+        return appDatabase.contestDao().getPastContests()
+    }
+
+    override fun getOngoingContests(): Flow<List<ContestEntity>> {
+        return appDatabase.contestDao().getOngoingContests()
+    }
 }

@@ -7,9 +7,7 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "contest",
     indices = [
-        Index("id"),
-        Index("phase"),
-        Index("startTimeSeconds")
+        Index(value = ["phase", "startTimeSeconds"], name = "index_contest_phase_startTime")
     ]
 )
 data class ContestEntity(

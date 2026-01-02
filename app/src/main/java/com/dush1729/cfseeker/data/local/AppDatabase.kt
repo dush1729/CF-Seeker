@@ -9,7 +9,7 @@ import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
 
 @Database(
-    version = 3,
+    version = 4,
     entities = [
         UserEntity::class,
         RatingChangeEntity::class,

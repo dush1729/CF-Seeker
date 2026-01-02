@@ -25,8 +25,16 @@ class ContestRepository @Inject constructor(
         preferences.setContestLastSyncTime(System.currentTimeMillis() / 1000)
     }
 
-    fun getAllContests(): Flow<List<ContestEntity>> {
-        return db.getAllContests()
+    fun getUpcomingContests(): Flow<List<ContestEntity>> {
+        return db.getUpcomingContests()
+    }
+
+    fun getPastContests(): Flow<List<ContestEntity>> {
+        return db.getPastContests()
+    }
+
+    fun getOngoingContests(): Flow<List<ContestEntity>> {
+        return db.getOngoingContests()
     }
 
     suspend fun getLastSyncTime(): Long? {

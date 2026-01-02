@@ -75,6 +75,18 @@ object ApplicationModule {
         }
     }
 
+    private val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Drop old individual indexes (except primary key)
+            db.execSQL("DROP INDEX IF EXISTS index_contest_id")
+            db.execSQL("DROP INDEX IF EXISTS index_contest_phase")
+            db.execSQL("DROP INDEX IF EXISTS index_contest_startTimeSeconds")
+
+            // Create composite index for optimal query performance
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_contest_phase_startTime ON contest(phase, startTimeSeconds)")
+        }
+    }
+
     @Singleton
     @Provides
     fun provideNetworkService(): NetworkService {
@@ -96,6 +108,7 @@ object ApplicationModule {
             .addMigrations(
                 MIGRATION_1_2,
                 MIGRATION_2_3,
+                MIGRATION_3_4,
                 )
             .build()
     }
