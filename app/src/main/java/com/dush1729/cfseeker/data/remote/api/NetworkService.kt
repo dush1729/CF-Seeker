@@ -1,6 +1,7 @@
 package com.dush1729.cfseeker.data.remote.api
 
 import com.dush1729.cfseeker.data.remote.model.CodeforcesApiResponse
+import com.dush1729.cfseeker.data.remote.model.Contest
 import com.dush1729.cfseeker.data.remote.model.RatingChange
 import com.dush1729.cfseeker.data.remote.model.User
 import retrofit2.http.GET
@@ -13,4 +14,7 @@ interface NetworkService {
 
     @GET("user.info")
     suspend fun getUser(@Query("handles") handle: String): CodeforcesApiResponse<User>
+
+    @GET("contest.list")
+    suspend fun getContests(@Query("gym") gym: Boolean = false): CodeforcesApiResponse<Contest>
 }
