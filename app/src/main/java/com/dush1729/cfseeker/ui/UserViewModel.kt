@@ -236,7 +236,7 @@ class UserViewModel @Inject constructor(
     fun getUserByHandle(handle: String) = repository.getUserByHandle(handle)
 
     // Get rating changes by handle
-    fun getRatingChangesByHandle(handle: String) = repository.getRatingChangesByHandle(handle)
+    fun getRatingChangesByHandle(handle: String, searchQuery: String = "") = repository.getRatingChangesByHandle(handle, searchQuery)
 
     // Remote Config feature flags
     fun isAddUserEnabled() = remoteConfigService.isAddUserEnabled()

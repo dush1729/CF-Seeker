@@ -57,8 +57,8 @@ class UserRepository @Inject constructor(
         return db.getUserByHandle(handle)
     }
 
-    fun getRatingChangesByHandle(handle: String): Flow<List<RatingChangeEntity>> {
-        return db.getRatingChangesByHandle(handle)
+    fun getRatingChangesByHandle(handle: String, searchQuery: String = ""): Flow<List<RatingChangeEntity>> {
+        return db.getRatingChangesByHandle(handle, searchQuery)
     }
 }
 

@@ -17,7 +17,7 @@ interface DatabaseService {
     suspend fun getAllUserHandles(): List<String>
     fun getUserCount(): Flow<Int>
     fun getUserByHandle(handle: String): Flow<UserEntity>
-    fun getRatingChangesByHandle(handle: String): Flow<List<RatingChangeEntity>>
+    fun getRatingChangesByHandle(handle: String, searchQuery: String = ""): Flow<List<RatingChangeEntity>>
 
     // Contest methods
     suspend fun addAllContests(contests: List<ContestEntity>)

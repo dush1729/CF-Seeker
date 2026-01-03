@@ -62,6 +62,6 @@ interface UserDao {
     @Query("SELECT * FROM user WHERE handle = :handle")
     fun getUserByHandle(handle: String): Flow<UserEntity>
 
-    @Query("SELECT * FROM rating_change WHERE handle = :handle ORDER BY ratingUpdateTimeSeconds DESC")
-    fun getRatingChangesByHandle(handle: String): Flow<List<RatingChangeEntity>>
+    @Query("SELECT * FROM rating_change WHERE handle = :handle AND contestName LIKE '%' || :searchQuery || '%' ORDER BY ratingUpdateTimeSeconds DESC")
+    fun getRatingChangesByHandle(handle: String, searchQuery: String = ""): Flow<List<RatingChangeEntity>>
 }
