@@ -10,15 +10,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -27,6 +32,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -34,6 +42,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,7 +62,10 @@ import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.ui.UserViewModel
+import com.dush1729.cfseeker.ui.theme.RatingNegative
+import com.dush1729.cfseeker.ui.theme.RatingPositive
 import com.dush1729.cfseeker.utils.getRatingColor
+import com.dush1729.cfseeker.utils.toFormattedDate
 import com.dush1729.cfseeker.utils.toRelativeTime
 import kotlinx.coroutines.launch
 
@@ -135,8 +147,12 @@ private fun UserDetailsContent(
 ) {
     var isSyncing by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
     val isSyncUserEnabled = remember { viewModel.isSyncUserEnabled() }
+    val ratingChanges by viewModel.getRatingChangesByHandle(user.handle).collectAsStateWithLifecycle(initialValue = emptyList())
+
+    val tabs = listOf("Info", "Ratings")
 
     Column(
         modifier = modifier
@@ -179,44 +195,41 @@ private fun UserDetailsContent(
 
         Spacer(modifier = Modifier.height(16.dp))
         HorizontalDivider()
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Scrollable content
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        // Tabs
+        SingleChoiceSegmentedButtonRow(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            // Basic Info Section
-            if (user.firstName != null || user.lastName != null || user.email != null) {
-                SectionTitle("Basic Info")
-                user.firstName?.let { DetailRow("First Name", it) }
-                user.lastName?.let { DetailRow("Last Name", it) }
-                user.email?.let { DetailRow("Email", it) }
+            tabs.forEachIndexed { index, tab ->
+                SegmentedButton(
+                    selected = selectedTabIndex == index,
+                    onClick = { selectedTabIndex = index },
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = tabs.size)
+                ) {
+                    Text(tab)
+                }
             }
+        }
 
-            // Stats Section
-            SectionTitle("Stats")
-            user.rating?.let { DetailRow("Rating", it.toString(), getRatingColor(it)) }
-            user.maxRating?.let { DetailRow("Max Rating", it.toString(), getRatingColor(it)) }
-            user.maxRank?.let { DetailRow("Max Rank", it, getRatingColor(user.maxRating)) }
-            DetailRow("Contribution", user.contribution.toString())
-            DetailRow("Friend of", "${user.friendOfCount} users")
+        Spacer(modifier = Modifier.height(16.dp))
 
-            // Location Section
-            if (user.country != null || user.city != null || user.organization != null) {
-                SectionTitle("Location & Organization")
-                user.country?.let { DetailRow("Country", it) }
-                user.city?.let { DetailRow("City", it) }
-                user.organization?.let { DetailRow("Organization", it) }
+        // Tab content
+        when (selectedTabIndex) {
+            0 -> {
+                // Info Tab
+                InfoContent(
+                    user = user,
+                    modifier = Modifier.weight(1f)
+                )
             }
-
-            // Metadata Section
-            SectionTitle("Metadata")
-            DetailRow("Registered", user.registrationTimeSeconds.toRelativeTime())
-            DetailRow("Last Online", user.lastOnlineTimeSeconds.toRelativeTime())
-            DetailRow("Last Synced", user.lastSync.toRelativeTime())
+            1 -> {
+                // Ratings Tab
+                RatingsContent(
+                    ratingChanges = ratingChanges,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
 
         HorizontalDivider()
@@ -303,6 +316,162 @@ private fun UserDetailsContent(
                     )
                     Spacer(modifier = Modifier.size(4.dp))
                     Text("Sync")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun InfoContent(
+    user: UserEntity,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .verticalScroll(rememberScrollState())
+            .padding(vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Basic Info Section
+        if (user.firstName != null || user.lastName != null || user.email != null) {
+            SectionTitle("Basic Info")
+            user.firstName?.let { DetailRow("First Name", it) }
+            user.lastName?.let { DetailRow("Last Name", it) }
+            user.email?.let { DetailRow("Email", it) }
+        }
+
+        // Stats Section
+        SectionTitle("Stats")
+        user.rating?.let { DetailRow("Rating", it.toString(), getRatingColor(it)) }
+        user.maxRating?.let { DetailRow("Max Rating", it.toString(), getRatingColor(it)) }
+        user.maxRank?.let { DetailRow("Max Rank", it, getRatingColor(user.maxRating)) }
+        DetailRow("Contribution", user.contribution.toString())
+        DetailRow("Friend of", "${user.friendOfCount} users")
+
+        // Location Section
+        if (user.country != null || user.city != null || user.organization != null) {
+            SectionTitle("Location & Organization")
+            user.country?.let { DetailRow("Country", it) }
+            user.city?.let { DetailRow("City", it) }
+            user.organization?.let { DetailRow("Organization", it) }
+        }
+
+        // Metadata Section
+        SectionTitle("Metadata")
+        DetailRow("Registered", user.registrationTimeSeconds.toRelativeTime())
+        DetailRow("Last Online", user.lastOnlineTimeSeconds.toRelativeTime())
+        DetailRow("Last Synced", user.lastSync.toRelativeTime())
+    }
+}
+
+@Composable
+private fun RatingsContent(
+    ratingChanges: List<com.dush1729.cfseeker.data.local.entity.RatingChangeEntity>,
+    modifier: Modifier = Modifier
+) {
+    if (ratingChanges.isEmpty()) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "No rating changes available",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    } else {
+        LazyColumn(
+            modifier = modifier,
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(
+                items = ratingChanges,
+                key = { it.contestId }
+            ) { ratingChange ->
+                RatingChangeCard(ratingChange)
+            }
+        }
+    }
+}
+
+@Composable
+private fun RatingChangeCard(
+    ratingChange: com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
+) {
+    val ratingDelta = ratingChange.newRating - ratingChange.oldRating
+    val deltaColor = when {
+        ratingDelta > 0 -> RatingPositive
+        ratingDelta < 0 -> RatingNegative
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = ratingChange.contestName,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Rank: ${ratingChange.contestRank}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = ratingChange.ratingUpdateTimeSeconds.toFormattedDate(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = ratingChange.oldRating.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = getRatingColor(ratingChange.oldRating)
+                    )
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "to",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = ratingChange.newRating.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = getRatingColor(ratingChange.newRating)
+                    )
+                    Text(
+                        text = if (ratingDelta > 0) "+$ratingDelta" else ratingDelta.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = deltaColor
+                    )
                 }
             }
         }

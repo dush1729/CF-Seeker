@@ -32,6 +32,10 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
         return appDatabase.userDao().getUserByHandle(handle)
     }
 
+    override fun getRatingChangesByHandle(handle: String): Flow<List<RatingChangeEntity>> {
+        return appDatabase.userDao().getRatingChangesByHandle(handle)
+    }
+
     override suspend fun addAllContests(contests: List<ContestEntity>) {
         appDatabase.contestDao().insertAllContests(contests)
     }
