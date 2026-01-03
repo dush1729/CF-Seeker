@@ -25,10 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.dush1729.cfseeker.data.local.entity.ContestEntity
+import com.dush1729.cfseeker.utils.toFormattedDate
 import com.dush1729.cfseeker.utils.toRelativeTime
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -63,7 +61,7 @@ fun ContestCard(
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
             ) {
                 Text(
-                    text = formatDateTime(contest.startTimeSeconds),
+                    text = contest.startTimeSeconds.toFormattedDate(),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -152,12 +150,6 @@ fun ContestCard(
             }
         }
     }
-}
-
-private fun formatDateTime(timestampSeconds: Long): String {
-    val date = Date(timestampSeconds * 1000)
-    val formatter = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-    return formatter.format(date)
 }
 
 private fun formatDuration(durationSeconds: Long): String {

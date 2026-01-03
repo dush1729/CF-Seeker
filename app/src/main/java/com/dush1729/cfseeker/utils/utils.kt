@@ -10,6 +10,9 @@ import com.dush1729.cfseeker.ui.theme.CFMaster
 import com.dush1729.cfseeker.ui.theme.CFNewbie
 import com.dush1729.cfseeker.ui.theme.CFPupil
 import com.dush1729.cfseeker.ui.theme.CFSpecialist
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.math.abs
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -63,6 +66,13 @@ fun <T: Number> T.toRelativeTime(): String {
     } else {
         "$relativeTime ago"
     }
+}
+
+fun <T: Number> T.toFormattedDate(): String {
+    val timestampMillis = toLong() * 1000 // Convert seconds to milliseconds
+    val date = Date(timestampMillis)
+    val formatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    return formatter.format(date)
 }
 
 fun getRatingColor(rating: Int?): Color {
