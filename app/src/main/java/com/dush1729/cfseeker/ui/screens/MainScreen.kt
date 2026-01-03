@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.ui.ContestViewModel
 import com.dush1729.cfseeker.ui.UserViewModel
@@ -24,6 +25,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
+    navController: NavController,
     userViewModel: UserViewModel,
     contestViewModel: ContestViewModel,
     analyticsService: AnalyticsService,
@@ -86,6 +88,7 @@ fun MainScreen(
         ) { page ->
             when (page) {
                 0 -> UserListScreen(
+                    navController = navController,
                     viewModel = userViewModel,
                     modifier = Modifier.fillMaxSize()
                 )

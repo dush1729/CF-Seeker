@@ -80,22 +80,24 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
+import com.dush1729.cfseeker.navigation.Screen
 import com.dush1729.cfseeker.ui.SortOption
 import com.dush1729.cfseeker.ui.UserViewModel
 import com.dush1729.cfseeker.ui.base.UiState
 import com.dush1729.cfseeker.ui.components.ErrorState
 import com.dush1729.cfseeker.ui.components.LoadingState
 import com.dush1729.cfseeker.ui.components.UserCard
-import com.dush1729.cfseeker.ui.components.UserDetailsBottomSheet
 import com.dush1729.cfseeker.ui.theme.CFSeekerTheme
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserListScreen(
+    navController: NavController,
     viewModel: UserViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -107,7 +109,6 @@ fun UserListScreen(
     val userCount by viewModel.userCount.collectAsStateWithLifecycle()
     val isAddUserEnabled = remember { viewModel.isAddUserEnabled() }
     val isSyncAllUsersEnabled = remember { viewModel.isSyncAllUsersEnabled() }
-    val isSyncUserEnabled = remember { viewModel.isSyncUserEnabled() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
@@ -125,8 +126,6 @@ fun UserListScreen(
     var showBottomSheet by remember { mutableStateOf(false) }
     var userHandle by remember { mutableStateOf("") }
     var showSortMenu by remember { mutableStateOf(false) }
-
-    var selectedUser by remember { mutableStateOf<UserEntity?>(null) }
 
     // Permission launcher for Android 13+
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -362,7 +361,7 @@ fun UserListScreen(
                             users = state.data,
                             sortOption = currentSortOption,
                             onUserCardClick = { user ->
-                                selectedUser = user
+                                navController.navigate(Screen.UserDetails.createRoute(user.handle))
                             }
                         )
                     }
@@ -395,50 +394,6 @@ fun UserListScreen(
                 },
                 sheetState = sheetState
             )
-        }
-    }
-
-    selectedUser?.let { user ->
-        val bottomSheetSnackbarHostState = remember { SnackbarHostState() }
-
-        // Collect snackbar messages while bottom sheet is open
-        LaunchedEffect(Unit) {
-            viewModel.snackbarMessage.collect { message ->
-                bottomSheetSnackbarHostState.showSnackbar(message)
-            }
-        }
-
-        ModalBottomSheet(
-            onDismissRequest = {
-                selectedUser = null
-            }
-        ) {
-            Box {
-                UserDetailsBottomSheet(
-                    user = user,
-                    onSyncClick = {
-                        viewModel.fetchUser(user.handle)
-                        selectedUser = null
-                    },
-                    onDeleteClick = {
-                        viewModel.deleteUser(user.handle)
-                    },
-                    onDismiss = {
-                        selectedUser = null
-                    },
-                    isSyncUserEnabled = isSyncUserEnabled,
-                    onFeatureDisabled = {
-                        scope.launch {
-                            bottomSheetSnackbarHostState.showSnackbar("Feature disabled")
-                        }
-                    }
-                )
-
-                SnackbarHost(
-                    hostState = bottomSheetSnackbarHostState,
-                    modifier = Modifier.align(Alignment.BottomCenter)
-                )
-            }
         }
     }
 }

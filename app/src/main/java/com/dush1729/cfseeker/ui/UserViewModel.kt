@@ -232,6 +232,9 @@ class UserViewModel @Inject constructor(
         }
     }
 
+    // Get user by handle
+    fun getUserByHandle(handle: String) = repository.getUserByHandle(handle)
+
     // Remote Config feature flags
     fun isAddUserEnabled() = remoteConfigService.isAddUserEnabled()
     fun isSyncAllUsersEnabled() = remoteConfigService.isSyncAllUsersEnabled()

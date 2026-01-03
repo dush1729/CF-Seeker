@@ -1,9 +1,11 @@
-package com.dush1729.cfseeker.ui.components
+package com.dush1729.cfseeker.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -12,17 +14,25 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,30 +45,88 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.dush1729.cfseeker.R
 import com.dush1729.cfseeker.data.local.entity.UserEntity
+import com.dush1729.cfseeker.ui.UserViewModel
 import com.dush1729.cfseeker.utils.getRatingColor
 import com.dush1729.cfseeker.utils.toRelativeTime
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserDetailsBottomSheet(
+fun UserDetailsScreen(
+    handle: String,
+    navController: NavController,
+    viewModel: UserViewModel,
+    modifier: Modifier = Modifier
+) {
+    val user by viewModel.getUserByHandle(handle).collectAsStateWithLifecycle(initialValue = null)
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Collect snackbar messages
+    LaunchedEffect(Unit) {
+        viewModel.snackbarMessage.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
+
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
+        topBar = {
+            TopAppBar(
+                title = { Text(user?.handle ?: "User Details") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        user?.let { currentUser ->
+            UserDetailsContent(
+                user = currentUser,
+                viewModel = viewModel,
+                snackbarHostState = snackbarHostState,
+                onNavigateBack = { navController.popBackStack() },
+                modifier = Modifier.padding(paddingValues)
+            )
+        } ?: Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    }
+}
+
+@Composable
+private fun UserDetailsContent(
     user: UserEntity,
-    onSyncClick: suspend () -> Unit,
-    onDeleteClick: suspend () -> Unit,
-    onDismiss: () -> Unit,
-    isSyncUserEnabled: Boolean = true,
-    onFeatureDisabled: () -> Unit = {},
+    viewModel: UserViewModel,
+    snackbarHostState: SnackbarHostState,
+    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isSyncing by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
+    val isSyncUserEnabled = remember { viewModel.isSyncUserEnabled() }
 
     Column(
         modifier = modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .padding(16.dp)
     ) {
         // Header with avatar and handle
@@ -101,7 +169,7 @@ fun UserDetailsBottomSheet(
         // Scrollable content
         Column(
             modifier = Modifier
-                .weight(1f, fill = false)
+                .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .padding(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -160,8 +228,8 @@ fun UserDetailsBottomSheet(
                     scope.launch {
                         try {
                             errorMessage = null
-                            onDeleteClick()
-                            onDismiss()
+                            viewModel.deleteUser(user.handle)
+                            onNavigateBack()
                         } catch (e: Exception) {
                             errorMessage = e.message ?: "Failed to delete user"
                         }
@@ -189,7 +257,7 @@ fun UserDetailsBottomSheet(
                             try {
                                 isSyncing = true
                                 errorMessage = null
-                                onSyncClick()
+                                viewModel.fetchUser(user.handle)
                                 isSyncing = false
                             } catch (e: Exception) {
                                 isSyncing = false
@@ -197,7 +265,9 @@ fun UserDetailsBottomSheet(
                             }
                         }
                     } else {
-                        onFeatureDisabled()
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Feature disabled")
+                        }
                     }
                 },
                 modifier = Modifier.weight(1f)
@@ -233,7 +303,11 @@ private fun SectionTitle(title: String) {
 }
 
 @Composable
-private fun DetailRow(label: String, value: String, valueColor: androidx.compose.ui.graphics.Color? = null) {
+private fun DetailRow(
+    label: String,
+    value: String,
+    valueColor: androidx.compose.ui.graphics.Color? = null
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween

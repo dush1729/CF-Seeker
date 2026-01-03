@@ -58,4 +58,7 @@ interface UserDao {
 
     @Query("SELECT COUNT(*) FROM user")
     fun getUserCount(): Flow<Int>
+
+    @Query("SELECT * FROM user WHERE handle = :handle")
+    fun getUserByHandle(handle: String): Flow<UserEntity>
 }

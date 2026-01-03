@@ -28,6 +28,10 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
         return appDatabase.userDao().getUserCount()
     }
 
+    override fun getUserByHandle(handle: String): Flow<UserEntity> {
+        return appDatabase.userDao().getUserByHandle(handle)
+    }
+
     override suspend fun addAllContests(contests: List<ContestEntity>) {
         appDatabase.contestDao().insertAllContests(contests)
     }
