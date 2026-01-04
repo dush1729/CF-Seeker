@@ -25,8 +25,8 @@ interface ContestDao {
     @Query("SELECT * FROM contest WHERE phase = 'BEFORE' ORDER BY startTimeSeconds ASC")
     fun getUpcomingContests(): Flow<List<ContestEntity>>
 
-    @Query("SELECT * FROM contest WHERE phase = 'FINISHED' ORDER BY startTimeSeconds DESC")
-    fun getPastContests(): Flow<List<ContestEntity>>
+    @Query("SELECT * FROM contest WHERE phase = 'FINISHED' AND name LIKE '%' || :searchQuery || '%' ORDER BY startTimeSeconds DESC")
+    fun getPastContests(searchQuery: String = ""): Flow<List<ContestEntity>>
 
     @Query("SELECT * FROM contest WHERE phase IN ('CODING', 'PENDING_SYSTEM_TEST', 'SYSTEM_TEST') ORDER BY startTimeSeconds ASC")
     fun getOngoingContests(): Flow<List<ContestEntity>>

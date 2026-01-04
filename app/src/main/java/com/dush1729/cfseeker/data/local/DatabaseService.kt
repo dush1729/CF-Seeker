@@ -23,6 +23,6 @@ interface DatabaseService {
     suspend fun addAllContests(contests: List<ContestEntity>)
     fun getAllContests(): Flow<List<ContestEntity>>
     fun getUpcomingContests(): Flow<List<ContestEntity>>
-    fun getPastContests(): Flow<List<ContestEntity>>
+    fun getPastContests(searchQuery: String = ""): Flow<List<ContestEntity>>
     fun getOngoingContests(): Flow<List<ContestEntity>>
 }

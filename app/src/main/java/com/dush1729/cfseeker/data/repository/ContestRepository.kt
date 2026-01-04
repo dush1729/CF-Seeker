@@ -29,8 +29,8 @@ class ContestRepository @Inject constructor(
         return db.getUpcomingContests()
     }
 
-    fun getPastContests(): Flow<List<ContestEntity>> {
-        return db.getPastContests()
+    fun getPastContests(searchQuery: String = ""): Flow<List<ContestEntity>> {
+        return db.getPastContests(searchQuery)
     }
 
     fun getOngoingContests(): Flow<List<ContestEntity>> {

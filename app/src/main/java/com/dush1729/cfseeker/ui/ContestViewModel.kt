@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -35,6 +36,9 @@ class ContestViewModel @Inject constructor(
     private val _selectedPhase = MutableStateFlow(ContestPhase.UPCOMING)
     val selectedPhase = _selectedPhase.asStateFlow()
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
+
     private val _uiState = MutableStateFlow<UiState<List<ContestEntity>>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
@@ -49,12 +53,14 @@ class ContestViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _selectedPhase
-                .flatMapLatest { contestPhase ->
+            combine(_selectedPhase, _searchQuery) { phase, query ->
+                Pair(phase, query)
+            }
+                .flatMapLatest { (contestPhase, searchQuery) ->
                     when (contestPhase) {
                         ContestPhase.UPCOMING -> repository.getUpcomingContests()
                         ContestPhase.ONGOING -> repository.getOngoingContests()
-                        ContestPhase.PAST -> repository.getPastContests()
+                        ContestPhase.PAST -> repository.getPastContests(searchQuery)
                     }
                 }
                 .flowOn(Dispatchers.IO)
@@ -89,6 +95,10 @@ class ContestViewModel @Inject constructor(
 
     fun setSelectedPhase(phase: ContestPhase) {
         _selectedPhase.value = phase
+    }
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 
     fun getRefreshIntervalMinutes(): Long {
