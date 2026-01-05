@@ -219,7 +219,17 @@ private fun UserDetailsContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Last Sync Time Display
+        Text(
+            text = "Last sync: ${user.lastSync.toRelativeTime()}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Tab content
         when (selectedTabIndex) {
@@ -370,7 +380,6 @@ private fun InfoContent(
         SectionTitle("Metadata")
         DetailRow("Registered", user.registrationTimeSeconds.toRelativeTime())
         DetailRow("Last Online", user.lastOnlineTimeSeconds.toRelativeTime())
-        DetailRow("Last Synced", user.lastSync.toRelativeTime())
     }
 }
 
