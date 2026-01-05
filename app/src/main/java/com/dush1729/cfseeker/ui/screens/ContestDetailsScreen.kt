@@ -90,11 +90,8 @@ fun ContestDetailsScreen(
         }
     }
 
-    // Auto-fetch standings on first load if database is empty
-    LaunchedEffect(problems.isEmpty() && standings.isEmpty()) {
-        if (problems.isEmpty() && standings.isEmpty()) {
-            viewModel.fetchContestStandings(contestId)
-        }
+    LaunchedEffect(Unit) {
+        viewModel.fetchContestStandings(contestId)
     }
 
     Scaffold(
