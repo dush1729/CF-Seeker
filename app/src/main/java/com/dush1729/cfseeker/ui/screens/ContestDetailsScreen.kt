@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -73,6 +74,7 @@ fun ContestDetailsScreen(
     val standings by viewModel.getContestStandings(contestId).collectAsStateWithLifecycle(initialValue = emptyList())
     val lastSyncTime by viewModel.lastSyncTime.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
 
     val refreshIntervalMinutes = remember { viewModel.getRefreshIntervalMinutes() }
 
@@ -125,6 +127,7 @@ fun ContestDetailsScreen(
             contestType = contestType,
             searchQuery = searchQuery,
             onSearchQueryChange = { viewModel.setSearchQuery(it) },
+            isRefreshing = isRefreshing,
             modifier = Modifier.padding(paddingValues)
         )
     }
@@ -139,6 +142,7 @@ private fun ContestDetailsContent(
     contestType: String,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
+    isRefreshing: Boolean,
     modifier: Modifier = Modifier
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -176,6 +180,13 @@ private fun ContestDetailsContent(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
         )
+
+        // Sync progress indicator
+        if (isRefreshing) {
+            LinearProgressIndicator(
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 

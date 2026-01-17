@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -56,6 +57,7 @@ fun ContestListScreen(
     val selectedPhase by viewModel.selectedPhase.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val lastSyncTime by viewModel.lastSyncTime.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     val refreshIntervalMinutes = remember { viewModel.getRefreshIntervalMinutes() }
@@ -119,6 +121,13 @@ fun ContestListScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             )
+
+            // Sync progress indicator
+            if (isRefreshing) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
             // Search field (only for past contests)
             if (selectedPhase == ContestPhase.PAST) {
