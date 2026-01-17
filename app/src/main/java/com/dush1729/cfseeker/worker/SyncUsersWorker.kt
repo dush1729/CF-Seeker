@@ -71,43 +71,35 @@ class SyncUsersWorker @AssistedInject constructor(
             val delaySeconds = remoteConfigService.getSyncAllUserDelaySeconds()
             val delayMillis = delaySeconds * 1000
 
-            // Sync each user with configured delay
-            userHandles.forEachIndexed { index, handle ->
-                try {
-                    crashlyticsService.log("SyncUsersWorker: Syncing user $handle (${index + 1}/${userHandles.size})")
-
-                    // Update progress data
-                    val progressData = Data.Builder()
-                        .putInt(KEY_PROGRESS_CURRENT, index + 1)
-                        .putInt(KEY_PROGRESS_TOTAL, userHandles.size)
-                        .build()
-                    setProgress(progressData)
-
-                    // Update notification with current progress
-                    setForeground(createForegroundInfo(index, userHandles.size, handle))
-
-                    // Fetch user data
-                    repository.fetchUser(handle)
+            // Use fetchUsers which makes 1 api call for all users + n calls for rating changes
+            repository.fetchUsers(userHandles, delayMillis) { index, total, handle, exception ->
+                if (exception == null) {
+                    // Success
                     successCount++
-                    crashlyticsService.log("SyncUsersWorker: Successfully synced $handle")
-
-                    // Wait configured delay before next user (except for last user)
-                    if (index < userHandles.size - 1) {
-                        delay(delayMillis)
-                    }
-                } catch (e: Exception) {
-                    // Continue with next user even if one fails
+                    crashlyticsService.log("SyncUsersWorker: Successfully synced $handle (${index + 1}/$total)")
+                } else {
+                    // Failure
                     failureCount++
-                    crashlyticsService.logException(e)
+                    crashlyticsService.logException(exception)
                     crashlyticsService.setCustomKey("user_handle", handle)
                     crashlyticsService.setCustomKey("operation", "doWork")
-                    crashlyticsService.setCustomKey("sync_progress", "${index + 1}/${userHandles.size}")
-                    crashlyticsService.log("SyncUsersWorker: Failed to sync $handle - ${e.message}")
+                    crashlyticsService.setCustomKey("sync_progress", "${index + 1}/$total")
+                    crashlyticsService.log("SyncUsersWorker: Failed to sync $handle - ${exception.message}")
                 }
+
+                // Update progress data
+                val progressData = Data.Builder()
+                    .putInt(KEY_PROGRESS_CURRENT, index + 1)
+                    .putInt(KEY_PROGRESS_TOTAL, total)
+                    .build()
+                setProgress(progressData)
+
+                // Update notification with current progress
+                setForeground(createForegroundInfo(index, total, handle, delayMillis))
             }
 
             // Show completion notification
-            setForeground(createCompletionNotification(userHandles.size))
+            setForeground(createCompletionNotification(successCount, failureCount))
             crashlyticsService.log("SyncUsersWorker: Sync completed successfully (success: $successCount, failed: $failureCount)")
 
             // Log analytics
@@ -159,11 +151,15 @@ class SyncUsersWorker @AssistedInject constructor(
     private fun createForegroundInfo(
         current: Int,
         total: Int,
-        currentHandle: String? = null
+        currentHandle: String? = null,
+        delayMillis: Long = 0
     ): ForegroundInfo {
         val title = "Syncing Users"
         val text = if (currentHandle != null) {
-            "Syncing $currentHandle (${current + 1}/$total)"
+            val remaining = total - (current + 1)
+            val etaMillis = remaining * delayMillis
+            val etaText = formatEta(etaMillis)
+            "Syncing $currentHandle (${current + 1}/$total)\nSync completes in ~$etaText"
         } else {
             "Starting sync..."
         }
@@ -171,6 +167,7 @@ class SyncUsersWorker @AssistedInject constructor(
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setProgress(total, current, false)
             .setOngoing(true)
@@ -187,10 +184,17 @@ class SyncUsersWorker @AssistedInject constructor(
         }
     }
 
-    private fun createCompletionNotification(total: Int): ForegroundInfo {
+    private fun createCompletionNotification(successCount: Int, failureCount: Int): ForegroundInfo {
+        val total = successCount + failureCount
+        val text = if (failureCount == 0) {
+            "Successfully synced $total users"
+        } else {
+            "Synced $total users ($successCount successful, $failureCount failed)"
+        }
+
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle("Sync Complete")
-            .setContentText("Successfully synced $total users")
+            .setContentText(text)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setProgress(0, 0, false)
             .setOngoing(false)
@@ -205,6 +209,16 @@ class SyncUsersWorker @AssistedInject constructor(
             )
         } else {
             ForegroundInfo(NOTIFICATION_ID, notification)
+        }
+    }
+
+    private fun formatEta(millis: Long): String {
+        val totalSeconds = millis / 1000
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return when {
+            minutes > 0 -> "${minutes}m ${seconds}s"
+            else -> "${seconds}s"
         }
     }
 }

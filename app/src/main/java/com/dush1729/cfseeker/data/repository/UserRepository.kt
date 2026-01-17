@@ -10,6 +10,7 @@ import com.dush1729.cfseeker.data.remote.model.RatingChange
 import com.dush1729.cfseeker.data.remote.model.User
 import com.dush1729.cfseeker.ui.SortOption
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -19,6 +20,7 @@ class UserRepository @Inject constructor(
     private val api: NetworkService,
     private val db: DatabaseService
 ) {
+    // makes 1 api call for user info + 1 call for rating changes
     suspend fun fetchUser(handle: String): Unit = withContext(Dispatchers.IO) {
         val apiUser: User = safeApiCall {
             api.getUser(handle)
@@ -32,6 +34,47 @@ class UserRepository @Inject constructor(
             user = apiUser.toUserEntity(),
             ratingChanges = apiRatingChanges.toRatingChangeEntity()
         )
+    }
+
+    // makes 1 api call for user info for all users + n calls for rating changes
+    suspend fun fetchUsers(
+        handles: List<String>,
+        delayMillis: Long,
+        onProgress: suspend (index: Int, total: Int, handle: String, exception: Exception?) -> Unit = { _, _, _, _ -> }
+    ): Unit = withContext(Dispatchers.IO) {
+        if (handles.isEmpty()) return@withContext
+
+        // Make 1 API call to get all users
+        val apiUsers: List<User> = safeApiCall {
+            api.getUser(handles.joinToString(";"))
+        }.result ?: emptyList()
+
+        // Make n API calls to get rating changes for each user
+        apiUsers.forEachIndexed { index, user ->
+            try {
+                val apiRatingChanges: List<RatingChange> = safeApiCall {
+                    api.getRatingChanges(user.handle)
+                }.result ?: emptyList()
+
+                db.addUser(
+                    user = user.toUserEntity(),
+                    ratingChanges = apiRatingChanges.toRatingChangeEntity()
+                )
+
+                // Notify progress - success
+                onProgress(index, apiUsers.size, user.handle, null)
+
+                // Wait configured delay before next user (except for last user)
+                if (index < apiUsers.size - 1) {
+                    delay(delayMillis)
+                }
+            } catch (e: Exception) {
+                // Notify progress - failure
+                onProgress(index, apiUsers.size, user.handle, e)
+
+                // Continue with next user even if one fails
+            }
+        }
     }
 
     suspend fun deleteUser(handle: String) : Unit = withContext(Dispatchers.IO) {
