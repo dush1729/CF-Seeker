@@ -1,8 +1,6 @@
 package com.dush1729.cfseeker.data.local.dao
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
@@ -22,9 +20,6 @@ interface UserDao {
 
     @Upsert
     suspend fun upsertRatingChanges(ratingChanges: List<RatingChangeEntity>)
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertRatingChangesIgnoreConflict(ratingChanges: List<RatingChangeEntity>)
 
     @Query("DELETE FROM rating_change WHERE handle = :handle")
     suspend fun deleteRatingChanges(handle: String)
@@ -69,7 +64,4 @@ interface UserDao {
 
     @Query("SELECT * FROM rating_change WHERE handle = :handle AND source = 'USER' AND contestName LIKE '%' || :searchQuery || '%' ORDER BY ratingUpdateTimeSeconds DESC")
     fun getRatingChangesByHandle(handle: String, searchQuery: String = ""): Flow<List<RatingChangeEntity>>
-
-    @Query("SELECT * FROM rating_change WHERE contestId = :contestId AND (:searchQuery = '' OR handle LIKE '%' || :searchQuery || '%') ORDER BY contestRank ASC")
-    fun getRatingChangesByContest(contestId: Int, searchQuery: String = ""): Flow<List<RatingChangeEntity>>
 }

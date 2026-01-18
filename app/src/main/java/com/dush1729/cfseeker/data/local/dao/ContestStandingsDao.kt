@@ -1,11 +1,14 @@
 package com.dush1729.cfseeker.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
+import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -40,4 +43,11 @@ interface ContestStandingsDao {
 
     @Query("SELECT * FROM contest_standing_row WHERE contestId = :contestId AND (:searchQuery = '' OR memberHandles LIKE '%' || :searchQuery || '%') ORDER BY rank ASC")
     fun getContestStandings(contestId: Int, searchQuery: String = ""): Flow<List<ContestStandingRowEntity>>
+
+    // Contest rating changes
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertRatingChangesIgnoreConflict(ratingChanges: List<RatingChangeEntity>)
+
+    @Query("SELECT * FROM rating_change WHERE contestId = :contestId AND (:searchQuery = '' OR handle LIKE '%' || :searchQuery || '%') ORDER BY contestRank ASC")
+    fun getRatingChangesByContest(contestId: Int, searchQuery: String = ""): Flow<List<RatingChangeEntity>>
 }
