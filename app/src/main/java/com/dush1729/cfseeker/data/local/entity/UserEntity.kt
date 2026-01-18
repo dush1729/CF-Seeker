@@ -1,5 +1,6 @@
 package com.dush1729.cfseeker.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -13,7 +14,9 @@ import androidx.room.PrimaryKey
     ]
 )
 data class UserEntity(
-    @PrimaryKey val handle: String,
+    @PrimaryKey
+    @ColumnInfo(collate = ColumnInfo.NOCASE)
+    val handle: String,
     val avatar: String?,
     val city: String?,
     val contribution: Int,

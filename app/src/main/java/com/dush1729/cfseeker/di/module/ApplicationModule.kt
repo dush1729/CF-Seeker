@@ -182,6 +182,14 @@ object ApplicationModule {
         }
     }
 
+    private val MIGRATION_8_9 = object : Migration(8, 9) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Recreate user table with NOCASE collation on handle for case-insensitive sorting
+            db.execSQL("DROP INDEX IF EXISTS index_user_handle")
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_user_handle ON user(handle COLLATE NOCASE)")
+        }
+    }
+
     @Singleton
     @Provides
     fun provideGson(): Gson {
@@ -214,6 +222,7 @@ object ApplicationModule {
                 MIGRATION_5_6,
                 MIGRATION_6_7,
                 MIGRATION_7_8,
+                MIGRATION_8_9,
             )
             .build()
     }
