@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -42,12 +43,17 @@ fun UserCard(
     onClick: (UserEntity) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val latestRatingChange = userRatingChange.ratingChanges.lastOrNull()
+    val userRating = userRatingChange.user.rating
+    val needsSync = (latestRatingChange?.newRating != userRating)
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .clickable { onClick(userRatingChange.user) },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = if (needsSync) BorderStroke(1.dp, MaterialTheme.colorScheme.error) else null
     ) {
         Row(
             modifier = Modifier
@@ -72,7 +78,6 @@ fun UserCard(
                 error = painterResource(id = R.drawable.ic_launcher_foreground)
             )
 
-            val latestRatingChange = userRatingChange.ratingChanges.lastOrNull()
             // User info (handle + last update time)
             Column(
                 modifier = Modifier.weight(1f),
@@ -109,9 +114,6 @@ fun UserCard(
 
             // Rating info (delta + new rating)
             latestRatingChange?.let { ratingChange ->
-                val userRating = userRatingChange.user.rating
-                val needsSync = userRating != null && userRating != ratingChange.newRating
-
                 Column(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(4.dp)
