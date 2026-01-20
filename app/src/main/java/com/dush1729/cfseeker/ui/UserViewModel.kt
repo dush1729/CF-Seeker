@@ -237,21 +237,28 @@ class UserViewModel @Inject constructor(
         }
     }
 
+    suspend fun canSyncAllUsers(): Boolean {
+        val cooldownMillis = remoteConfigService.getSyncAllCooldownMinutes() * 60 * 1000
+        val currentTime = System.currentTimeMillis()
+        val lastSyncAllTime = appPreferences.getLastSyncAllTime()
+        val timeSinceLastSync = currentTime - lastSyncAllTime
+        if (timeSinceLastSync < cooldownMillis) {
+            // Still in cooldown, show remaining time
+            val nextSyncTime = (lastSyncAllTime + cooldownMillis) / 1000 // Convert to seconds
+            val relativeTime = nextSyncTime.toRelativeTime()
+            val message = "You can sync again $relativeTime"
+
+            _snackbarMessage.emit(message)
+            crashlyticsService.log("UserViewModel: Sync blocked, cooldown active. Next sync: $relativeTime")
+            return false
+        }
+        return true
+    }
+
     fun syncAllUsers() {
         viewModelScope.launch {
             crashlyticsService.log("UserViewModel: syncAllUsers called")
-            val cooldownMillis = remoteConfigService.getSyncAllCooldownMinutes() * 60 * 1000
-            val currentTime = System.currentTimeMillis()
-            val lastSyncAllTime = appPreferences.getLastSyncAllTime()
-            val timeSinceLastSync = currentTime - lastSyncAllTime
-            if (lastSyncAllTime > 0 && timeSinceLastSync < cooldownMillis) {
-                // Still in cooldown, show remaining time
-                val nextSyncTime = (lastSyncAllTime + cooldownMillis) / 1000 // Convert to seconds
-                val relativeTime = nextSyncTime.toRelativeTime()
-                val message = "You can sync again $relativeTime"
-
-                _snackbarMessage.emit(message)
-                crashlyticsService.log("UserViewModel: Sync blocked, cooldown active. Next sync: $relativeTime")
+            if (!canSyncAllUsers()) {
                 return@launch
             }
 
@@ -259,7 +266,7 @@ class UserViewModel @Inject constructor(
             analyticsService.logBulkSyncStarted()
 
             // Update last sync time
-            appPreferences.setLastSyncAllTime(currentTime)
+            appPreferences.setLastSyncAllTime(System.currentTimeMillis())
 
             val syncWorkRequest = OneTimeWorkRequestBuilder<SyncUsersWorker>()
                 .setBackoffCriteria(

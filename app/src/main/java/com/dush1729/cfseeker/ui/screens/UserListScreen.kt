@@ -38,21 +38,18 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -67,6 +64,7 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.outlined.PersonSearch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -131,6 +129,7 @@ fun UserListScreen(
     var showBottomSheet by remember { mutableStateOf(false) }
     var userHandle by remember { mutableStateOf("") }
     var showSortMenu by remember { mutableStateOf(false) }
+    var showSyncDialog by remember { mutableStateOf(false) }
 
     // Permission launcher for Android 13+
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -211,56 +210,47 @@ fun UserListScreen(
             ) {
                 // Sync button - only show when user list size > 1
                 if (userCount > 1) {
-                    TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = {
-                            PlainTooltip {
-                                Text("" +
-                                        "Sync all users\n" +
-                                        "Limited usage\n" +
-                                        "(High API load)")
-                            }
-                        },
-                        state = rememberTooltipState()
-                    ) {
-                        BadgedBox(
-                            badge = {
-                                syncProgress?.let { (current, total) ->
-                                    Badge(
-                                        containerColor = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.offset(x = (-8).dp, y = 8.dp)
-                                    ) {
-                                        Text(
-                                            text = "$current/$total",
-                                            style = MaterialTheme.typography.labelSmall
-                                        )
-                                    }
+                    BadgedBox(
+                        badge = {
+                            syncProgress?.let { (current, total) ->
+                                Badge(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.offset(x = (-8).dp, y = 8.dp)
+                                ) {
+                                    Text(
+                                        text = "$current/$total",
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
                                 }
                             }
-                        ) {
-                            FloatingActionButton(
-                                onClick = {
-                                    if (isSyncAllUsersEnabled) {
-                                        requestNotificationPermissionAndSync()
-                                    } else {
-                                        scope.launch {
-                                            snackbarHostState.showSnackbar("Feature disabled")
+                        }
+                    ) {
+                        FloatingActionButton(
+                            onClick = {
+                                if (isSyncAllUsersEnabled) {
+                                    scope.launch {
+                                        if (viewModel.canSyncAllUsers()) {
+                                            showSyncDialog = true
                                         }
                                     }
-                                },
-                                containerColor = if (isSyncing)
-                                    MaterialTheme.colorScheme.secondaryContainer
-                                else
-                                    MaterialTheme.colorScheme.primaryContainer
-                            ) {
-                                if (isSyncing) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(24.dp),
-                                        strokeWidth = 2.dp
-                                    )
                                 } else {
-                                    Icon(Icons.Filled.Sync, contentDescription = "Sync users")
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Feature disabled")
+                                    }
                                 }
+                            },
+                            containerColor = if (isSyncing)
+                                MaterialTheme.colorScheme.secondaryContainer
+                            else
+                                MaterialTheme.colorScheme.primaryContainer
+                        ) {
+                            if (isSyncing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Icon(Icons.Filled.Sync, contentDescription = "Sync users")
                             }
                         }
                     }
@@ -419,6 +409,34 @@ fun UserListScreen(
                 sheetState = sheetState
             )
         }
+    }
+
+    if (showSyncDialog) {
+        AlertDialog(
+            onDismissRequest = { showSyncDialog = false },
+            icon = { Icon(Icons.Filled.Sync, contentDescription = null) },
+            title = { Text("Sync all $userCount users?") },
+            text = {
+                Text(
+                    text = "Uses one API call per user.\nThis may take a while.",
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showSyncDialog = false
+                        requestNotificationPermissionAndSync()
+                    }
+                ) {
+                    Text("Sync")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSyncDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
