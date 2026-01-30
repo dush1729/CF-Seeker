@@ -190,6 +190,14 @@ object ApplicationModule {
         }
     }
 
+    private val MIGRATION_9_10 = object : Migration(9, 10) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Replace index to optimize for source='USER' queries (USER entries are ~0.01% of table)
+            db.execSQL("DROP INDEX IF EXISTS index_rating_change_handle_source_time")
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_source_handle_ratingUpdateTimeSeconds ON rating_change(source, handle, ratingUpdateTimeSeconds)")
+        }
+    }
+
     @Singleton
     @Provides
     fun provideGson(): Gson {
@@ -223,6 +231,7 @@ object ApplicationModule {
                 MIGRATION_6_7,
                 MIGRATION_7_8,
                 MIGRATION_8_9,
+                MIGRATION_9_10,
             )
             .build()
     }

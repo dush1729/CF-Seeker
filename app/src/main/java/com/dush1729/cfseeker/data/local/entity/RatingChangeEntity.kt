@@ -7,7 +7,7 @@ import androidx.room.Index
     tableName = "rating_change",
     primaryKeys = ["handle", "contestId"],
     indices = [
-        Index(value = ["handle", "source", "ratingUpdateTimeSeconds"]),
+        Index(value = ["source", "handle", "ratingUpdateTimeSeconds"]),
         Index(value = ["contestId", "contestRank"])
     ]
 )
