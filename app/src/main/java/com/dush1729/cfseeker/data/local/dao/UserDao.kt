@@ -65,4 +65,7 @@ interface UserDao {
 
     @Query("SELECT * FROM rating_change WHERE handle = :handle AND source = 'USER' AND contestName LIKE '%' || :searchQuery || '%' ORDER BY ratingUpdateTimeSeconds DESC")
     fun getRatingChangesByHandle(handle: String, searchQuery: String = ""): Flow<List<RatingChangeEntity>>
+
+    @Query("SELECT handle FROM user_with_latest_rating_change WHERE isRatingOutdated = 1")
+    fun getOutdatedUserHandles(): Flow<List<String>>
 }

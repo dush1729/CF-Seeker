@@ -8,6 +8,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
+import androidx.work.workDataOf
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -77,6 +79,22 @@ class UserViewModel @Inject constructor(
 
     val userCount: StateFlow<Int> = repository.getUserCount()
         .flowOn(Dispatchers.IO)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0
+        )
+
+    private val _outdatedUserHandles = repository.getOutdatedUserHandles()
+        .flowOn(Dispatchers.IO)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val outdatedUserCount: StateFlow<Int> = _outdatedUserHandles
+        .map { it.size }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -262,6 +280,13 @@ class UserViewModel @Inject constructor(
                 return@launch
             }
 
+            // Get outdated user handles from cached StateFlow
+            val outdatedHandles = _outdatedUserHandles.value
+            if (outdatedHandles.isEmpty()) {
+                _snackbarMessage.emit("No users need syncing")
+                return@launch
+            }
+
             // Cooldown has passed, proceed with sync
             analyticsService.logBulkSyncStarted()
 
@@ -269,6 +294,9 @@ class UserViewModel @Inject constructor(
             appPreferences.setLastSyncAllTime(System.currentTimeMillis())
 
             val syncWorkRequest = OneTimeWorkRequestBuilder<SyncUsersWorker>()
+                .setInputData(
+                    workDataOf(SyncUsersWorker.KEY_USER_HANDLES to outdatedHandles.toTypedArray())
+                )
                 .setBackoffCriteria(
                     BackoffPolicy.EXPONENTIAL,
                     WorkRequest.MIN_BACKOFF_MILLIS,
@@ -282,7 +310,7 @@ class UserViewModel @Inject constructor(
                 syncWorkRequest
             )
 
-            crashlyticsService.log("UserViewModel: Work enqueued with ID: ${syncWorkRequest.id}")
+            crashlyticsService.log("UserViewModel: Work enqueued with ID: ${syncWorkRequest.id}, syncing ${outdatedHandles.size} outdated users")
         }
     }
 

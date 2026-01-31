@@ -105,6 +105,7 @@ fun UserListScreen(
     val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
     val syncProgress by viewModel.syncProgress.collectAsStateWithLifecycle()
     val userCount by viewModel.userCount.collectAsStateWithLifecycle()
+    val outdatedUserCount by viewModel.outdatedUserCount.collectAsStateWithLifecycle()
     val lastSyncTime by viewModel.lastSyncTime.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val isAddUserEnabled = remember { viewModel.isAddUserEnabled() }
@@ -206,8 +207,8 @@ fun UserListScreen(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Sync button - only show when user list size > 1
-                if (userCount > 1) {
+                // Sync button - only show when there are outdated users
+                if (outdatedUserCount > 0) {
                     BadgedBox(
                         badge = {
                             syncProgress?.let { (current, total) ->
@@ -413,7 +414,7 @@ fun UserListScreen(
         AlertDialog(
             onDismissRequest = { showSyncDialog = false },
             icon = { Icon(Icons.Filled.Sync, contentDescription = null) },
-            title = { Text("Sync all $userCount users?") },
+            title = { Text("Sync $outdatedUserCount outdated user${if (outdatedUserCount > 1) "s" else ""}?") },
             text = {
                 Text(
                     text = "Uses one API call per user.\nThis may take a while.",

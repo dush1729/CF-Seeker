@@ -42,6 +42,10 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
         return appDatabase.userDao().getRatingChangesByHandle(handle, searchQuery)
     }
 
+    override fun getOutdatedUserHandles(): Flow<List<String>> {
+        return appDatabase.userDao().getOutdatedUserHandles()
+    }
+
     override suspend fun addAllContests(contests: List<ContestEntity>) {
         appDatabase.contestDao().insertAllContests(contests)
     }

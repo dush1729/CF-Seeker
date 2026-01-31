@@ -37,6 +37,7 @@ class SyncUsersWorker @AssistedInject constructor(
         const val WORK_NAME = "sync_all_users"
         const val KEY_PROGRESS_CURRENT = "progress_current"
         const val KEY_PROGRESS_TOTAL = "progress_total"
+        const val KEY_USER_HANDLES = "user_handles"
     }
 
     override suspend fun doWork(): Result {
@@ -46,8 +47,13 @@ class SyncUsersWorker @AssistedInject constructor(
         var failureCount = 0
 
         return try {
-            // Get all user handles from database
-            val userHandles = repository.getAllUserHandles()
+            // Get user handles from input data, or fall back to all user handles
+            val inputHandles = inputData.getStringArray(KEY_USER_HANDLES)?.toList()
+            val userHandles = if (!inputHandles.isNullOrEmpty()) {
+                inputHandles
+            } else {
+                repository.getAllUserHandles()
+            }
             crashlyticsService.log("SyncUsersWorker: Found ${userHandles.size} users to sync")
 
             if (userHandles.isEmpty()) {

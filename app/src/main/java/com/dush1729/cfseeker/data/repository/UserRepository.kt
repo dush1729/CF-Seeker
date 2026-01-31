@@ -104,6 +104,10 @@ class UserRepository @Inject constructor(
         return db.getRatingChangesByHandle(handle, searchQuery)
     }
 
+    fun getOutdatedUserHandles(): Flow<List<String>> {
+        return db.getOutdatedUserHandles()
+    }
+
     // Fetches only user info (no rating changes) for all users - single API call
     suspend fun fetchUsersInfo(handles: List<String>): Unit = withContext(Dispatchers.IO) {
         if (handles.isEmpty()) return@withContext
