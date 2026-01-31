@@ -5,7 +5,7 @@ import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
-import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
+import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -22,8 +22,8 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
         appDatabase.userDao().deleteUserAndRatingChanges(handle)
     }
 
-    override fun getAllUserRatingChanges(sortBy: String, searchQuery: String): Flow<List<UserRatingChanges>> {
-        return appDatabase.userDao().getAllUserRatingChanges(sortBy, searchQuery)
+    override fun getUsersWithLatestRatingChange(sortBy: String, searchQuery: String): Flow<List<UserWithLatestRatingChangeView>> {
+        return appDatabase.userDao().getUsersWithLatestRatingChange(sortBy, searchQuery)
     }
 
     override suspend fun getAllUserHandles(): List<String> {

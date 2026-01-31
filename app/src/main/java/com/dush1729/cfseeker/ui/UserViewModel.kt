@@ -12,7 +12,7 @@ import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
 import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
 import com.dush1729.cfseeker.data.local.AppPreferences
-import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
+import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 import com.dush1729.cfseeker.data.repository.UserRepository
 import com.dush1729.cfseeker.ui.base.UiState
 import com.dush1729.cfseeker.utils.toRelativeTime
@@ -50,7 +50,7 @@ class UserViewModel @Inject constructor(
     private val appPreferences: AppPreferences,
     private val remoteConfigService: RemoteConfigService
 ): ViewModel() {
-    private val _uiState = MutableStateFlow<UiState<List<UserRatingChanges>>>(
+    private val _uiState = MutableStateFlow<UiState<List<UserWithLatestRatingChangeView>>>(
         UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
@@ -106,7 +106,7 @@ class UserViewModel @Inject constructor(
                 Pair(sortOption, searchQuery)
             }
                 .flatMapLatest { (sortOption, searchQuery) ->
-                    repository.getAllUserRatingChanges(sortOption.value, searchQuery)
+                    repository.getUsersWithLatestRatingChange(sortOption.value, searchQuery)
                 }
                 .flowOn(Dispatchers.IO)
                 .catch {

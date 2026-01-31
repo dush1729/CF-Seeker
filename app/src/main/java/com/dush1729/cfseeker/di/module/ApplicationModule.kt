@@ -198,6 +198,46 @@ object ApplicationModule {
         }
     }
 
+    private val MIGRATION_10_11 = object : Migration(10, 11) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // SQL must match @DatabaseView annotation exactly (whitespace matters!)
+            db.execSQL("""CREATE VIEW `user_with_latest_rating_change` AS SELECT
+            u.handle,
+            u.avatar,
+            u.city,
+            u.contribution,
+            u.country,
+            u.email,
+            u.firstName,
+            u.friendOfCount,
+            u.lastName,
+            u.lastOnlineTimeSeconds,
+            u.maxRank,
+            u.maxRating,
+            u.organization,
+            u.rank,
+            u.rating,
+            u.registrationTimeSeconds,
+            u.titlePhoto,
+            u.lastSync,
+            rc.contestId AS latestContestId,
+            rc.contestName AS latestContestName,
+            rc.contestRank AS latestContestRank,
+            rc.oldRating AS latestOldRating,
+            rc.newRating AS latestNewRating,
+            rc.ratingUpdateTimeSeconds AS latestRatingUpdateTimeSeconds,
+            CASE WHEN u.rating IS NOT rc.newRating THEN 1 ELSE 0 END AS isRatingOutdated
+        FROM user u
+        LEFT JOIN rating_change rc ON u.handle = rc.handle
+            AND rc.source = 'USER'
+            AND rc.ratingUpdateTimeSeconds = (
+                SELECT MAX(rc2.ratingUpdateTimeSeconds)
+                FROM rating_change rc2
+                WHERE rc2.handle = u.handle AND rc2.source = 'USER'
+            )""")
+        }
+    }
+
     @Singleton
     @Provides
     fun provideGson(): Gson {
@@ -232,6 +272,7 @@ object ApplicationModule {
                 MIGRATION_7_8,
                 MIGRATION_8_9,
                 MIGRATION_9_10,
+                MIGRATION_10_11,
             )
             .build()
     }

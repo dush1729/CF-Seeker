@@ -26,9 +26,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import androidx.compose.ui.platform.LocalContext
 import com.dush1729.cfseeker.R
-import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
-import com.dush1729.cfseeker.data.local.entity.UserEntity
-import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
+import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 import com.dush1729.cfseeker.ui.SortOption
 import com.dush1729.cfseeker.ui.theme.CFSeekerTheme
 import com.dush1729.cfseeker.ui.theme.RatingNegative
@@ -38,22 +36,18 @@ import com.dush1729.cfseeker.utils.toRelativeTime
 
 @Composable
 fun UserCard(
-    userRatingChange: UserRatingChanges,
+    user: UserWithLatestRatingChangeView,
     sortOption: SortOption = SortOption.LAST_RATING_UPDATE,
-    onClick: (UserEntity) -> Unit = {},
+    onClick: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val latestRatingChange = userRatingChange.ratingChanges.lastOrNull()
-    val userRating = userRatingChange.user.rating
-    val needsSync = (latestRatingChange?.newRating != userRating)
-
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp)
-            .clickable { onClick(userRatingChange.user) },
+            .clickable { onClick(user.handle) },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = if (needsSync) BorderStroke(1.dp, MaterialTheme.colorScheme.error) else null
+        border = if (user.isRatingOutdated) BorderStroke(1.dp, MaterialTheme.colorScheme.error) else null
     ) {
         Row(
             modifier = Modifier
@@ -65,7 +59,7 @@ fun UserCard(
             // User Avatar
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(userRatingChange.user.avatar)
+                    .data(user.avatar)
                     .size(96)
                     .crossfade(false)
                     .build(),
@@ -85,20 +79,20 @@ fun UserCard(
             ) {
                 // User handle - bold, 16sp
                 Text(
-                    text = userRatingChange.user.handle,
+                    text = user.handle,
                     style = MaterialTheme.typography.titleMedium,
-                    color = getRatingColor(userRatingChange.user.rating),
+                    color = getRatingColor(user.rating),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
 
                 val (lastUpdateTitle, lastUpdatedTime) = when (sortOption) {
                     SortOption.LAST_SYNC -> {
-                        val syncTime = userRatingChange.user.lastSync.toRelativeTime()
+                        val syncTime = user.lastSync.toRelativeTime()
                         "Last sync" to syncTime
                     }
                     else -> {
-                        val updateTime = latestRatingChange?.ratingUpdateTimeSeconds?.toRelativeTime()
+                        val updateTime = user.latestRatingUpdateTimeSeconds?.toRelativeTime()
                             ?: "No rating update"
                         "Last rating update" to updateTime
                     }
@@ -113,12 +107,12 @@ fun UserCard(
             }
 
             // Rating info (delta + new rating)
-            latestRatingChange?.let { ratingChange ->
+            if (user.latestContestId != null && user.latestOldRating != null && user.latestNewRating != null) {
                 Column(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    if (needsSync) {
+                    if (user.isRatingOutdated) {
                         // Show sync required when user.rating doesn't match latest rating change
                         Text(
                             text = "Sync required",
@@ -127,7 +121,7 @@ fun UserCard(
                         )
                     } else {
                         // Show rating delta
-                        val delta = ratingChange.newRating - ratingChange.oldRating
+                        val delta = user.latestNewRating - user.latestOldRating
                         val deltaText = if (delta > 0) "+$delta" else delta.toString()
                         val deltaColor = when {
                             delta > 0 -> RatingPositive
@@ -144,9 +138,9 @@ fun UserCard(
 
                     // New rating (from user info, which is more up-to-date)
                     Text(
-                        text = (userRating ?: ratingChange.newRating).toString(),
+                        text = (user.rating ?: user.latestNewRating).toString(),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = getRatingColor(userRating ?: ratingChange.newRating)
+                        color = getRatingColor(user.rating ?: user.latestNewRating)
                     )
                 }
             }
@@ -159,40 +153,32 @@ fun UserCard(
 private fun UserCardPreview() {
     CFSeekerTheme {
         UserCard(
-            userRatingChange = UserRatingChanges(
-                user = UserEntity(
-                    handle = "tourist",
-                    avatar = null,
-                    city = "St. Petersburg",
-                    contribution = 100,
-                    country = "Russia",
-                    email = null,
-                    firstName = "Gennady",
-                    friendOfCount = 5000,
-                    lastName = "Korotkevich",
-                    lastOnlineTimeSeconds = System.currentTimeMillis() / 1000,
-                    maxRank = "legendary grandmaster",
-                    maxRating = 3979,
-                    organization = null,
-                    rank = "legendary grandmaster",
-                    rating = 3979,
-                    registrationTimeSeconds = 1234567890,
-                    titlePhoto = "",
-                    lastSync = System.currentTimeMillis()
-                ),
-                ratingChanges = listOf(
-                    RatingChangeEntity(
-                        handle = "tourist",
-                        contestId = 1234,
-                        contestName = "Codeforces Round #XXX",
-                        contestRank = 1,
-                        oldRating = 3937,
-                        newRating = 3979,
-                        ratingUpdateTimeSeconds = System.currentTimeMillis() / 1000 - 86400 * 2,
-                        lastSync = System.currentTimeMillis(),
-                        source = "USER"
-                    )
-                )
+            user = UserWithLatestRatingChangeView(
+                handle = "tourist",
+                avatar = null,
+                city = "St. Petersburg",
+                contribution = 100,
+                country = "Russia",
+                email = null,
+                firstName = "Gennady",
+                friendOfCount = 5000,
+                lastName = "Korotkevich",
+                lastOnlineTimeSeconds = System.currentTimeMillis() / 1000,
+                maxRank = "legendary grandmaster",
+                maxRating = 3979,
+                organization = null,
+                rank = "legendary grandmaster",
+                rating = 3979,
+                registrationTimeSeconds = 1234567890,
+                titlePhoto = "",
+                lastSync = System.currentTimeMillis(),
+                latestContestId = 1234,
+                latestContestName = "Codeforces Round #XXX",
+                latestContestRank = 1,
+                latestOldRating = 3937,
+                latestNewRating = 3979,
+                latestRatingUpdateTimeSeconds = System.currentTimeMillis() / 1000 - 86400 * 2,
+                isRatingOutdated = false
             )
         )
     }
@@ -203,28 +189,32 @@ private fun UserCardPreview() {
 private fun UserCardNoRatingPreview() {
     CFSeekerTheme {
         UserCard(
-            userRatingChange = UserRatingChanges(
-                user = UserEntity(
-                    handle = "newuser",
-                    avatar = null,
-                    city = null,
-                    contribution = 0,
-                    country = null,
-                    email = null,
-                    firstName = null,
-                    friendOfCount = 0,
-                    lastName = null,
-                    lastOnlineTimeSeconds = System.currentTimeMillis() / 1000,
-                    maxRank = null,
-                    maxRating = null,
-                    organization = null,
-                    rank = null,
-                    rating = null,
-                    registrationTimeSeconds = 1234567890,
-                    titlePhoto = "",
-                    lastSync = System.currentTimeMillis()
-                ),
-                ratingChanges = emptyList()
+            user = UserWithLatestRatingChangeView(
+                handle = "newuser",
+                avatar = null,
+                city = null,
+                contribution = 0,
+                country = null,
+                email = null,
+                firstName = null,
+                friendOfCount = 0,
+                lastName = null,
+                lastOnlineTimeSeconds = System.currentTimeMillis() / 1000,
+                maxRank = null,
+                maxRating = null,
+                organization = null,
+                rank = null,
+                rating = null,
+                registrationTimeSeconds = 1234567890,
+                titlePhoto = "",
+                lastSync = System.currentTimeMillis(),
+                latestContestId = null,
+                latestContestName = null,
+                latestContestRank = null,
+                latestOldRating = null,
+                latestNewRating = null,
+                latestRatingUpdateTimeSeconds = null,
+                isRatingOutdated = false
             )
         )
     }
@@ -235,40 +225,32 @@ private fun UserCardNoRatingPreview() {
 private fun UserCardDarkPreview() {
     CFSeekerTheme(darkTheme = true) {
         UserCard(
-            userRatingChange = UserRatingChanges(
-                user = UserEntity(
-                    handle = "petr",
-                    avatar = null,
-                    city = null,
-                    contribution = 50,
-                    country = "Russia",
-                    email = null,
-                    firstName = "Petr",
-                    friendOfCount = 1000,
-                    lastName = "Mitrichev",
-                    lastOnlineTimeSeconds = System.currentTimeMillis() / 1000,
-                    maxRank = "legendary grandmaster",
-                    maxRating = 3200,
-                    organization = null,
-                    rank = "international grandmaster",
-                    rating = 3150,
-                    registrationTimeSeconds = 1234567890,
-                    titlePhoto = "",
-                    lastSync = System.currentTimeMillis()
-                ),
-                ratingChanges = listOf(
-                    RatingChangeEntity(
-                        handle = "petr",
-                        contestId = 5678,
-                        contestName = "Educational Round",
-                        contestRank = 15,
-                        oldRating = 3180,
-                        newRating = 3150,
-                        ratingUpdateTimeSeconds = System.currentTimeMillis() / 1000 - 3600,
-                        lastSync = System.currentTimeMillis(),
-                        source = "USER"
-                    )
-                )
+            user = UserWithLatestRatingChangeView(
+                handle = "petr",
+                avatar = null,
+                city = null,
+                contribution = 50,
+                country = "Russia",
+                email = null,
+                firstName = "Petr",
+                friendOfCount = 1000,
+                lastName = "Mitrichev",
+                lastOnlineTimeSeconds = System.currentTimeMillis() / 1000,
+                maxRank = "legendary grandmaster",
+                maxRating = 3200,
+                organization = null,
+                rank = "international grandmaster",
+                rating = 3150,
+                registrationTimeSeconds = 1234567890,
+                titlePhoto = "",
+                lastSync = System.currentTimeMillis(),
+                latestContestId = 5678,
+                latestContestName = "Educational Round",
+                latestContestRank = 15,
+                latestOldRating = 3180,
+                latestNewRating = 3150,
+                latestRatingUpdateTimeSeconds = System.currentTimeMillis() / 1000 - 3600,
+                isRatingOutdated = false
             )
         )
     }

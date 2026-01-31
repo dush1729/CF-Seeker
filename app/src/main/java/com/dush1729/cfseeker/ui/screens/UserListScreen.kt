@@ -80,9 +80,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
-import com.dush1729.cfseeker.data.local.entity.UserEntity
-import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
+import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 import com.dush1729.cfseeker.navigation.Screen
 import com.dush1729.cfseeker.ui.SortOption
 import com.dush1729.cfseeker.ui.UserViewModel
@@ -374,8 +372,8 @@ fun UserListScreen(
                         UserList(
                             users = state.data,
                             sortOption = currentSortOption,
-                            onUserCardClick = { user ->
-                                navController.navigate(Screen.UserDetails.createRoute(user.handle))
+                            onUserCardClick = { handle ->
+                                navController.navigate(Screen.UserDetails.createRoute(handle))
                             }
                         )
                     }
@@ -602,10 +600,10 @@ private fun AddUserBottomSheet(
 
 @Composable
 private fun UserList(
-    users: List<UserRatingChanges>,
+    users: List<UserWithLatestRatingChangeView>,
     sortOption: SortOption = SortOption.LAST_RATING_UPDATE,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    onUserCardClick: (UserEntity) -> Unit = {},
+    onUserCardClick: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -619,10 +617,10 @@ private fun UserList(
     ) {
         items(
             items = users,
-            key = { it.user.handle }
-        ) { userRatingChange ->
+            key = { it.handle }
+        ) { user ->
             UserCard(
-                userRatingChange = userRatingChange,
+                user = user,
                 sortOption = sortOption,
                 onClick = onUserCardClick,
                 modifier = if (users.size < 50) Modifier.animateItem() else Modifier
@@ -637,63 +635,59 @@ private fun UserListPreview() {
     CFSeekerTheme {
         UserList(
             users = listOf(
-                UserRatingChanges(
-                    user = UserEntity(
-                        handle = "tourist",
-                        avatar = null,
-                        city = "St. Petersburg",
-                        contribution = 100,
-                        country = "Russia",
-                        email = null,
-                        firstName = "Gennady",
-                        friendOfCount = 5000,
-                        lastName = "Korotkevich",
-                        lastOnlineTimeSeconds = System.currentTimeMillis() / 1000,
-                        maxRank = "legendary grandmaster",
-                        maxRating = 3979,
-                        organization = null,
-                        rank = "legendary grandmaster",
-                        rating = 3979,
-                        registrationTimeSeconds = 1234567890,
-                        titlePhoto = "",
-                        lastSync = System.currentTimeMillis() / 1000
-                    ),
-                    ratingChanges = listOf(
-                        RatingChangeEntity(
-                            handle = "tourist",
-                            contestId = 1234,
-                            contestName = "Codeforces Round #XXX",
-                            contestRank = 1,
-                            oldRating = 3937,
-                            newRating = 3979,
-                            ratingUpdateTimeSeconds = System.currentTimeMillis() / 1000 - 86400,
-                            lastSync = System.currentTimeMillis(),
-                            source = "USER"
-                        )
-                    )
+                UserWithLatestRatingChangeView(
+                    handle = "tourist",
+                    avatar = null,
+                    city = "St. Petersburg",
+                    contribution = 100,
+                    country = "Russia",
+                    email = null,
+                    firstName = "Gennady",
+                    friendOfCount = 5000,
+                    lastName = "Korotkevich",
+                    lastOnlineTimeSeconds = System.currentTimeMillis() / 1000,
+                    maxRank = "legendary grandmaster",
+                    maxRating = 3979,
+                    organization = null,
+                    rank = "legendary grandmaster",
+                    rating = 3979,
+                    registrationTimeSeconds = 1234567890,
+                    titlePhoto = "",
+                    lastSync = System.currentTimeMillis() / 1000,
+                    latestContestId = 1234,
+                    latestContestName = "Codeforces Round #XXX",
+                    latestContestRank = 1,
+                    latestOldRating = 3937,
+                    latestNewRating = 3979,
+                    latestRatingUpdateTimeSeconds = System.currentTimeMillis() / 1000 - 86400,
+                    isRatingOutdated = false
                 ),
-                UserRatingChanges(
-                    user = UserEntity(
-                        handle = "newuser",
-                        avatar = null,
-                        city = null,
-                        contribution = 0,
-                        country = null,
-                        email = null,
-                        firstName = null,
-                        friendOfCount = 0,
-                        lastName = null,
-                        lastOnlineTimeSeconds = System.currentTimeMillis() / 1000,
-                        maxRank = null,
-                        maxRating = null,
-                        organization = null,
-                        rank = null,
-                        rating = null,
-                        registrationTimeSeconds = 1234567890,
-                        titlePhoto = "",
-                        lastSync = System.currentTimeMillis()
-                    ),
-                    ratingChanges = emptyList()
+                UserWithLatestRatingChangeView(
+                    handle = "newuser",
+                    avatar = null,
+                    city = null,
+                    contribution = 0,
+                    country = null,
+                    email = null,
+                    firstName = null,
+                    friendOfCount = 0,
+                    lastName = null,
+                    lastOnlineTimeSeconds = System.currentTimeMillis() / 1000,
+                    maxRank = null,
+                    maxRating = null,
+                    organization = null,
+                    rank = null,
+                    rating = null,
+                    registrationTimeSeconds = 1234567890,
+                    titlePhoto = "",
+                    lastSync = System.currentTimeMillis(),
+                    latestContestId = null,
+                    latestContestName = null,
+                    latestContestRank = null,
+                    latestOldRating = null,
+                    latestNewRating = null,
+                    latestRatingUpdateTimeSeconds = null,
+                    isRatingOutdated = false
                 )
             )
         )

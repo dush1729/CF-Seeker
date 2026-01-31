@@ -10,15 +10,19 @@ import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
+import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 
 @Database(
-    version = 10,
+    version = 11,
     entities = [
         UserEntity::class,
         RatingChangeEntity::class,
         ContestEntity::class,
         ContestProblemEntity::class,
         ContestStandingRowEntity::class,
+    ],
+    views = [
+        UserWithLatestRatingChangeView::class,
     ],
     exportSchema = true,
 )

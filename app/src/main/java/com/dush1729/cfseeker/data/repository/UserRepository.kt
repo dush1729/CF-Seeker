@@ -3,7 +3,7 @@ package com.dush1729.cfseeker.data.repository
 import com.dush1729.cfseeker.data.local.DatabaseService
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
-import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
+import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 import com.dush1729.cfseeker.data.remote.api.NetworkService
 import com.dush1729.cfseeker.data.remote.api.safeApiCall
 import com.dush1729.cfseeker.data.remote.model.RatingChange
@@ -81,11 +81,11 @@ class UserRepository @Inject constructor(
         db.deleteUser(handle)
     }
 
-    fun getAllUserRatingChanges(
+    fun getUsersWithLatestRatingChange(
         sortBy: String = SortOption.LAST_RATING_UPDATE.value,
         searchQuery: String = ""
-    ): Flow<List<UserRatingChanges>> {
-        return db.getAllUserRatingChanges(sortBy, searchQuery)
+    ): Flow<List<UserWithLatestRatingChangeView>> {
+        return db.getUsersWithLatestRatingChange(sortBy, searchQuery)
     }
 
     suspend fun getAllUserHandles(): List<String> {

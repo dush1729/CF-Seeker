@@ -5,7 +5,7 @@ import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
-import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
+import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 import com.dush1729.cfseeker.ui.SortOption
 import kotlinx.coroutines.flow.Flow
 import java.util.Locale
@@ -14,10 +14,10 @@ interface DatabaseService {
     suspend fun addUser(user: UserEntity, ratingChanges: List<RatingChangeEntity>)
     suspend fun upsertUsers(users: List<UserEntity>)
     suspend fun deleteUser(handle: String)
-    fun getAllUserRatingChanges(
+    fun getUsersWithLatestRatingChange(
         sortBy: String = SortOption.LAST_RATING_UPDATE.value,
         searchQuery: String = ""
-    ): Flow<List<UserRatingChanges>>
+    ): Flow<List<UserWithLatestRatingChangeView>>
     suspend fun getAllUserHandles(): List<String>
     fun getUserCount(): Flow<Int>
     fun getUserByHandle(handle: String): Flow<UserEntity>

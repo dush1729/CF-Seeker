@@ -6,7 +6,7 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
-import com.dush1729.cfseeker.data.local.entity.UserRatingChanges
+import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 import com.dush1729.cfseeker.ui.SortOption
 import kotlinx.coroutines.flow.Flow
 
@@ -38,23 +38,21 @@ interface UserDao {
         deleteUser(handle)
         deleteRatingChanges(handle)
     }
-    @Transaction
+
     @Query("""
-        SELECT user.* FROM user
-        LEFT JOIN rating_change ON user.handle = rating_change.handle AND rating_change.source = 'USER'
-        WHERE user.handle LIKE '%' || :searchQuery || '%'
-        GROUP BY user.handle
+        SELECT * FROM user_with_latest_rating_change
+        WHERE handle LIKE '%' || :searchQuery || '%'
         ORDER BY
-            CASE WHEN :sortBy = 'LAST_RATING_UPDATE' THEN MAX(rating_change.ratingUpdateTimeSeconds) END DESC,
-            CASE WHEN :sortBy = 'RATING' THEN user.rating END DESC,
-            CASE WHEN :sortBy = 'LAST_SYNC' THEN user.lastSync END DESC,
-            CASE WHEN :sortBy = 'HANDLE' THEN user.handle END ASC,
-            user.handle ASC
+            CASE WHEN :sortBy = 'LAST_RATING_UPDATE' THEN latestRatingUpdateTimeSeconds END DESC,
+            CASE WHEN :sortBy = 'RATING' THEN rating END DESC,
+            CASE WHEN :sortBy = 'LAST_SYNC' THEN lastSync END DESC,
+            CASE WHEN :sortBy = 'HANDLE' THEN handle END ASC,
+            handle ASC
     """)
-    fun getAllUserRatingChanges(
+    fun getUsersWithLatestRatingChange(
         sortBy: String = SortOption.LAST_RATING_UPDATE.value,
         searchQuery: String = ""
-    ): Flow<List<UserRatingChanges>>
+    ): Flow<List<UserWithLatestRatingChangeView>>
 
     @Query("SELECT handle FROM user")
     suspend fun getAllUserHandles(): List<String>
