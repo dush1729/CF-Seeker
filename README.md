@@ -1,21 +1,36 @@
-# CFSeeker
+# Codeforces Seeker
 
-**A modern Android app to track and monitor Codeforces users and their rating changes.**
+**A modern Android app to track and monitor Codeforces users, contests, and rating changes.**
 
-CFSeeker helps competitive programmers track their friends, teammates, or favorite competitive programmers on Codeforces. Get real-time updates on rating changes, contest performance, and user statistics with a beautiful Material 3 UI.
+Codeforces Seeker helps competitive programmers track their friends, teammates, or favorite competitive programmers on Codeforces. Get real-time updates on rating changes, contest standings, problems, and user statistics with a beautiful Material 3 UI.
 
 [![Get it on Google Play](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=com.dush1729.cfseeker)
 
 ## ✨ Features
 
-- 📊 Track multiple Codeforces users
-- 📈 View rating history and contest performance
-- 🔍 Search and sort users by various criteria
-- 🔄 Sync user data with background workers
+### Users
+- 📊 Track multiple Codeforces users with real-time sync
+- 📈 Interactive rating history chart in user details
+- 🔍 Search and sort users by handle, rating, last sync, or last rating update
+- 🔄 Auto-refresh with visual sync status indicators
+- 🔴 Red border highlights for outdated users
+- 🔗 Click to open contests from rating history
+- 🎨 Adaptive color themes based on user ratings
+
+### Contests
+- 🏆 Browse and search past Codeforces contests
+- 📊 View full contest standings with participant details
+- 🔍 Search participants within contest standings
+- 📈 Ratings tab showing all rating changes from a contest
+- 📝 Problems tab with "Hide spoilers" filter
+- 📋 Long-press to copy participant handles
+- 🔗 Open problems directly in browser
+
+### General
 - 🎨 Modern Material Design 3 UI
-- 🌙 Adaptive color themes based on user ratings
-- 📱 Optimized image loading with Coil
+- 📱 Optimized image loading with smooth scrolling
 - 🔥 Firebase integration (Analytics, Crashlytics, Remote Config)
+- ⚡ Optimized database queries with indexes and views
 
 ## 🏗️ Tech Stack
 
@@ -56,8 +71,9 @@ app/src/main/java/com/dush1729/cfseeker/
 │   └── FirebaseCrashlyticsService.kt
 ├── data/
 │   ├── local/
-│   │   ├── dao/            # Room DAOs
+│   │   ├── dao/            # Room DAOs (UserDao, ContestDao, ContestStandingsDao)
 │   │   ├── entity/         # Room entities
+│   │   ├── view/           # Database views for optimized queries
 │   │   ├── AppDatabase.kt
 │   │   └── DatabaseService.kt
 │   ├── remote/
@@ -70,30 +86,111 @@ app/src/main/java/com/dush1729/cfseeker/
 ├── ui/
 │   ├── base/               # Base UI classes
 │   ├── components/         # Reusable Compose components
-│   ├── screens/            # App screens
+│   ├── screens/            # App screens (Users, Contests, UserDetails, ContestDetails)
 │   ├── theme/              # Material 3 theme
-│   └── UserViewModel.kt
+│   ├── UserViewModel.kt
+│   └── ContestViewModel.kt
 ├── utils/                  # Utility classes
 ├── worker/                 # WorkManager workers
 └── MyApplication.kt
 ```
 
-## 🔄 Migration History
+## 🔄 Development History
 
-This project has undergone significant modernization:
+This project has undergone significant modernization and feature additions:
 
-### Dagger 2 → Dagger Hilt
+### Architecture Migrations
+
+#### Dagger 2 → Dagger Hilt
 **Commit:** [`d38ca97`](../../commit/d38ca97) - migration: dagger to hilt
 
 Migrated from Dagger 2 to Dagger Hilt for simplified dependency injection with less boilerplate and better Android integration.
 
-### XML Views → Jetpack Compose
+#### XML Views → Jetpack Compose
 **Migration Commits:**
 - [`ed5d446`](../../commit/ed5d446) - setup compose dependencies in gradle(#1)
 - [`d11477b`](../../commit/d11477b) - setup compose ui: Color, Theme and Type(#1)
 - [`8b7d771`](../../commit/8b7d771) - compose: create components and screen(#1)
 
 Fully migrated from XML-based UI to Jetpack Compose for a modern, declarative UI approach with better maintainability.
+
+### Release History
+
+#### Unreleased
+- "Hide spoilers" filter chip for problems
+- Long-press to copy participant handles
+- Click-to-open contest links from rating history
+- Database views for optimized queries
+- Show "Sync All" only when outdated users present
+- Play Store link in README
+
+#### v3.4 - Sync Improvements
+- Red border highlights for outdated users
+- Sync All dialog with confirmation
+- Clear contest data functionality
+- Case-insensitive user sorting fix
+
+#### v3.3 - Auto Refresh
+- Auto-refresh with visual sync status indicators
+
+#### v3.2 - Rating Charts & Performance
+- Interactive user rating chart in details screen
+- Ratings tab in contest details
+- App renamed from CF Seeker to Codeforces Seeker
+- AsyncImage optimizations for smooth scrolling
+- Reduced API calls from 2n to n+1
+- ProGuard rules for optimized release builds
+- Sync indicators in contest screens
+- Fixed blank screen on quick back presses
+
+#### v3.1 - Bug Fixes
+- Fixed tie handling in contest standings
+
+#### v3.0 - Contests Feature
+- Browse and search past Codeforces contests
+- Full contest standings with participant search
+- Full-screen user details (replaced bottom sheet)
+- Tabbed interface (Info, Ratings) in user details
+- Search within user's rating history
+- Open problems directly in browser
+- Auto-refresh for contests
+
+#### v2.3 - UI Improvements
+- Scrollable bottom sheet
+- Hide empty results during search
+
+#### v2.2 - Onboarding
+- Empty users view for better onboarding
+- Auto-popup keyboard on bottom sheet
+
+#### v2.1 - Performance
+- Database query optimizations with indexes
+- IO thread improvements for DataStore & Firebase
+
+#### v2.0 - Firebase Integration
+- Firebase Analytics with event tracking
+- Crashlytics for crash reporting
+- Remote Config for feature flags
+- Sync all cooldown to prevent API abuse
+
+#### v1.3 - Polish
+- About screen
+- Snackbar notifications for actions
+- Animated list items
+- Search feature for users
+
+#### v1.2 - Sync & Sort
+- Sort by handle option
+- Sync all users functionality
+- Rank-based color themes
+
+#### v1.1 - Initial Release
+- Track Codeforces users
+- View rating changes
+- Add/delete users
+- User detail bottom sheet
+- Dagger to Hilt migration
+- XML to Jetpack Compose migration
 
 ## 🚀 Getting Started
 
