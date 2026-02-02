@@ -46,7 +46,7 @@ interface UserDao {
             CASE WHEN :sortBy = 'LAST_RATING_UPDATE' THEN latestRatingUpdateTimeSeconds END DESC,
             CASE WHEN :sortBy = 'RATING' THEN rating END DESC,
             CASE WHEN :sortBy = 'LAST_SYNC' THEN lastSync END DESC,
-            CASE WHEN :sortBy = 'HANDLE' THEN handle END ASC,
+            CASE WHEN :sortBy = 'HANDLE' THEN handle COLLATE NOCASE END ASC,
             handle ASC
     """)
     fun getUsersWithLatestRatingChange(
