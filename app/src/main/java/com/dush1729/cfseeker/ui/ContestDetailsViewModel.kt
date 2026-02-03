@@ -9,11 +9,15 @@ import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.repository.ContestStandingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -44,16 +48,23 @@ class ContestDetailsViewModel @Inject constructor(
             .flowOn(Dispatchers.IO)
     }
 
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     fun getContestStandings(contestId: Int): Flow<List<ContestStandingRowEntity>> {
-        return _searchQuery.flatMapLatest { query ->
-            repository.getContestStandings(contestId, query)
-        }.flowOn(Dispatchers.IO)
+        return _searchQuery
+            .debounce(300)
+            .distinctUntilChanged()
+            .flatMapLatest { query ->
+                repository.getContestStandings(contestId, query)
+            }.flowOn(Dispatchers.IO)
     }
 
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     fun getContestRatingChanges(contestId: Int): Flow<List<RatingChangeEntity>> {
-        return _searchQuery.flatMapLatest { query ->
-            repository.getContestRatingChanges(contestId, query)
-        }.flowOn(Dispatchers.IO)
+        return _searchQuery
+            .debounce(300)
+            .flatMapLatest { query ->
+                repository.getContestRatingChanges(contestId, query)
+            }.flowOn(Dispatchers.IO)
     }
 
     fun setSearchQuery(query: String) {
