@@ -116,11 +116,15 @@ Fully migrated from XML-based UI to Jetpack Compose for a modern, declarative UI
 
 ### Release History
 
-#### Unreleased
+#### v4.0 - Contest Filters & Performance
+- "Show local only" filter in standings and rating changes
 - "Hide spoilers" filter chip for problems
 - Long-press to copy participant handles
 - Click-to-open contest links from rating history
-- Database views for optimized queries
+- Database views for optimized user list with latest rating changes
+- Debouncer to reduce database load
+- Clear contest data in preferences when clearing cache
+- App name update in Share title and content
 - Show "Sync All" only when outdated users present
 - Play Store link in README
 
