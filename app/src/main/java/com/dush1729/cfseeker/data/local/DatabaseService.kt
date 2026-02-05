@@ -54,7 +54,7 @@ interface DatabaseService {
 
     // Contest cache info methods
     suspend fun getContestCacheInfo(): ContestCacheInfo
-    suspend fun clearContestCache()
+    suspend fun clearContestCache(): List<Int>
 }
 
 data class ContestCacheInfo(

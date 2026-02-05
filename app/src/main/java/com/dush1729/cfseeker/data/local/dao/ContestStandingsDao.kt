@@ -91,10 +91,15 @@ interface ContestStandingsDao {
     @Query("DELETE FROM rating_change WHERE source = 'CONTEST'")
     suspend fun deleteAllContestRatingChanges()
 
+    @Query("SELECT DISTINCT contestId FROM contest_problem")
+    suspend fun getCachedContestIds(): List<Int>
+
     @Transaction
-    suspend fun clearContestCache() {
+    suspend fun clearContestCache(): List<Int> {
+        val contestIds = getCachedContestIds()
         deleteAllContestProblems()
         deleteAllContestStandings()
         deleteAllContestRatingChanges()
+        return contestIds
     }
 }

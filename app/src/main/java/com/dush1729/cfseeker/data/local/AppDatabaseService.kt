@@ -106,7 +106,7 @@ class AppDatabaseService @Inject constructor(private val appDatabase: AppDatabas
         )
     }
 
-    override suspend fun clearContestCache() {
-        appDatabase.contestStandingsDao().clearContestCache()
+    override suspend fun clearContestCache(): List<Int> {
+        return appDatabase.contestStandingsDao().clearContestCache()
     }
 }

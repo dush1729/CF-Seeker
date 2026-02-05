@@ -48,7 +48,8 @@ class ContestRepository @Inject constructor(
     }
 
     suspend fun clearCache(): Unit = withContext(Dispatchers.IO) {
-        db.clearContestCache()
+        val contestIds = db.clearContestCache()
+        preferences.clearContestPreferences(contestIds)
     }
 }
 
