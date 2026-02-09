@@ -193,7 +193,9 @@ object ApplicationModule {
     private val MIGRATION_9_10 = object : Migration(9, 10) {
         override fun migrate(db: SupportSQLiteDatabase) {
             // Replace index to optimize for source='USER' queries (USER entries are ~0.01% of table)
+            // Drop both possible names: migration-created and Room auto-generated
             db.execSQL("DROP INDEX IF EXISTS index_rating_change_handle_source_time")
+            db.execSQL("DROP INDEX IF EXISTS index_rating_change_handle_source_ratingUpdateTimeSeconds")
             db.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_source_handle_ratingUpdateTimeSeconds ON rating_change(source, handle, ratingUpdateTimeSeconds)")
         }
     }
@@ -238,6 +240,15 @@ object ApplicationModule {
         }
     }
 
+    private val MIGRATION_11_12 = object : Migration(11, 12) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Drop stale index left over from fresh installs at DB version 8
+            // MIGRATION_9_10 only dropped "handle_source_time" (migration name) but missed
+            // "handle_source_ratingUpdateTimeSeconds" (Room auto-generated name for fresh installs)
+            db.execSQL("DROP INDEX IF EXISTS index_rating_change_handle_source_ratingUpdateTimeSeconds")
+        }
+    }
+
     @Singleton
     @Provides
     fun provideGson(): Gson {
@@ -273,6 +284,7 @@ object ApplicationModule {
                 MIGRATION_8_9,
                 MIGRATION_9_10,
                 MIGRATION_10_11,
+                MIGRATION_11_12,
             )
             .build()
     }

@@ -13,7 +13,7 @@ import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 
 @Database(
-    version = 11,
+    version = 12,
     entities = [
         UserEntity::class,
         RatingChangeEntity::class,
