@@ -1,0 +1,321 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "3367c9ab6e8c77e1b66d38b08bce72d5",
+    "entities": [
+      {
+        "tableName": "user",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`handle` TEXT NOT NULL, `avatar` TEXT, `city` TEXT, `contribution` INTEGER NOT NULL, `country` TEXT, `email` TEXT, `firstName` TEXT, `friendOfCount` INTEGER NOT NULL, `lastName` TEXT, `lastOnlineTimeSeconds` INTEGER NOT NULL, `maxRank` TEXT, `maxRating` INTEGER, `organization` TEXT, `rank` TEXT, `rating` INTEGER, `registrationTimeSeconds` INTEGER NOT NULL, `titlePhoto` TEXT NOT NULL, `lastSync` INTEGER NOT NULL, PRIMARY KEY(`handle`))",
+        "fields": [
+          {
+            "fieldPath": "handle",
+            "columnName": "handle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "avatar",
+            "columnName": "avatar",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "city",
+            "columnName": "city",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "contribution",
+            "columnName": "contribution",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "country",
+            "columnName": "country",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "email",
+            "columnName": "email",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "firstName",
+            "columnName": "firstName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "friendOfCount",
+            "columnName": "friendOfCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastName",
+            "columnName": "lastName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastOnlineTimeSeconds",
+            "columnName": "lastOnlineTimeSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxRank",
+            "columnName": "maxRank",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "maxRating",
+            "columnName": "maxRating",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "organization",
+            "columnName": "organization",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "rank",
+            "columnName": "rank",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "registrationTimeSeconds",
+            "columnName": "registrationTimeSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "titlePhoto",
+            "columnName": "titlePhoto",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastSync",
+            "columnName": "lastSync",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "handle"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_user_handle",
+            "unique": false,
+            "columnNames": [
+              "handle"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_user_handle` ON `${TABLE_NAME}` (`handle`)"
+          },
+          {
+            "name": "index_user_lastSync",
+            "unique": false,
+            "columnNames": [
+              "lastSync"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_user_lastSync` ON `${TABLE_NAME}` (`lastSync`)"
+          },
+          {
+            "name": "index_user_rating",
+            "unique": false,
+            "columnNames": [
+              "rating"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_user_rating` ON `${TABLE_NAME}` (`rating`)"
+          }
+        ]
+      },
+      {
+        "tableName": "rating_change",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`handle` TEXT NOT NULL, `contestId` INTEGER NOT NULL, `contestName` TEXT NOT NULL, `contestRank` INTEGER NOT NULL, `oldRating` INTEGER NOT NULL, `newRating` INTEGER NOT NULL, `ratingUpdateTimeSeconds` INTEGER NOT NULL, `lastSync` INTEGER NOT NULL, PRIMARY KEY(`handle`, `contestId`))",
+        "fields": [
+          {
+            "fieldPath": "handle",
+            "columnName": "handle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "contestId",
+            "columnName": "contestId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "contestName",
+            "columnName": "contestName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "contestRank",
+            "columnName": "contestRank",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "oldRating",
+            "columnName": "oldRating",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "newRating",
+            "columnName": "newRating",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ratingUpdateTimeSeconds",
+            "columnName": "ratingUpdateTimeSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastSync",
+            "columnName": "lastSync",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "handle",
+            "contestId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_rating_change_handle",
+            "unique": false,
+            "columnNames": [
+              "handle"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_rating_change_handle` ON `${TABLE_NAME}` (`handle`)"
+          },
+          {
+            "name": "index_rating_change_ratingUpdateTimeSeconds",
+            "unique": false,
+            "columnNames": [
+              "ratingUpdateTimeSeconds"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_rating_change_ratingUpdateTimeSeconds` ON `${TABLE_NAME}` (`ratingUpdateTimeSeconds`)"
+          }
+        ]
+      },
+      {
+        "tableName": "contest",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `type` TEXT NOT NULL, `phase` TEXT NOT NULL, `frozen` INTEGER NOT NULL, `durationSeconds` INTEGER NOT NULL, `startTimeSeconds` INTEGER NOT NULL, `relativeTimeSeconds` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "phase",
+            "columnName": "phase",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "frozen",
+            "columnName": "frozen",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "durationSeconds",
+            "columnName": "durationSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startTimeSeconds",
+            "columnName": "startTimeSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "relativeTimeSeconds",
+            "columnName": "relativeTimeSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_contest_id",
+            "unique": false,
+            "columnNames": [
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_contest_id` ON `${TABLE_NAME}` (`id`)"
+          },
+          {
+            "name": "index_contest_phase",
+            "unique": false,
+            "columnNames": [
+              "phase"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_contest_phase` ON `${TABLE_NAME}` (`phase`)"
+          },
+          {
+            "name": "index_contest_startTimeSeconds",
+            "unique": false,
+            "columnNames": [
+              "startTimeSeconds"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_contest_startTimeSeconds` ON `${TABLE_NAME}` (`startTimeSeconds`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3367c9ab6e8c77e1b66d38b08bce72d5')"
+    ]
+  }
+}
