@@ -8,7 +8,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.kotlin.serialization)
-    id("kotlin-kapt")
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
 }
@@ -41,9 +42,6 @@ kotlin {
 
             // Ktor Android engine
             implementation(libs.ktor.client.okhttp)
-
-            implementation(libs.androidx.room.runtime)
-            implementation(libs.androidx.room.ktx)
 
             implementation(libs.androidx.lifecycle.viewmodel.ktx)
 
@@ -84,6 +82,10 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.kotlinx.serialization.json)
+
+            // Room KMP
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.sqlite.bundled)
 
             // Koin
             implementation(libs.koin.core)
@@ -167,10 +169,8 @@ android {
     }
 }
 
-kapt {
-    arguments {
-        arg("room.schemaLocation", "$projectDir/schemas")
-    }
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 dependencies {
@@ -178,8 +178,11 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(platform(libs.firebase.bom))
 
-    // kapt dependencies must be in top-level dependencies block (Room only)
-    "kapt"(libs.androidx.room.compiler)
+    // Room KSP for each target
+    add("kspAndroid", libs.androidx.room.compiler)
+    add("kspIosX64", libs.androidx.room.compiler)
+    add("kspIosArm64", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
 
     // Test dependencies
     testImplementation(libs.junit)

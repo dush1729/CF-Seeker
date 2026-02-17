@@ -1,6 +1,7 @@
 package com.dush1729.cfseeker.di
 
 import androidx.room.Room
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.work.WorkManager
 import com.dush1729.cfseeker.BuildConfig
 import com.dush1729.cfseeker.analytics.AnalyticsService
@@ -27,6 +28,7 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.ktx.remoteConfig
+import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -34,12 +36,14 @@ import org.koin.dsl.module
 val androidModule = module {
     // Database
     single<AppDatabase> {
-        Room.databaseBuilder(
-            androidContext(),
-            AppDatabase::class.java,
-            "app_database"
+        val dbFile = androidContext().getDatabasePath("app_database")
+        Room.databaseBuilder<AppDatabase>(
+            context = androidContext(),
+            name = dbFile.absolutePath
         )
             .addMigrations(*AppDatabaseMigrations.ALL_MIGRATIONS)
+            .setDriver(BundledSQLiteDriver())
+            .setQueryCoroutineContext(Dispatchers.IO)
             .build()
     }
 

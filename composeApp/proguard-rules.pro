@@ -57,6 +57,9 @@
     @androidx.room.* <methods>;
 }
 
+# Room KMP generated database constructors
+-keep class * extends androidx.room.RoomDatabase { <init>(); }
+
 #---------------------------------
 # Kotlin Specific Rules
 #---------------------------------

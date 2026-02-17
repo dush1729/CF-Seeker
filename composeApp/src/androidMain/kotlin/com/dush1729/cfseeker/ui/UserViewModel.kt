@@ -34,13 +34,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
-enum class SortOption(val value: String, val displayName: String) {
-    LAST_RATING_UPDATE("LAST_RATING_UPDATE", "default"),
-    HANDLE("HANDLE", "handle"),
-    RATING("RATING", "rating"),
-    LAST_SYNC("LAST_SYNC", "last sync"),
-}
-
 class UserViewModel(
     private val repository: UserRepository,
     private val workManager: WorkManager,

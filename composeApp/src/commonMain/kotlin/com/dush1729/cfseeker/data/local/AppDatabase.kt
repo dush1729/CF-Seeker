@@ -1,7 +1,9 @@
 package com.dush1729.cfseeker.data.local
 
+import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.RoomDatabaseConstructor
 import com.dush1729.cfseeker.data.local.AppDatabase.Companion.VERSION
 import com.dush1729.cfseeker.data.local.dao.ContestDao
 import com.dush1729.cfseeker.data.local.dao.ContestStandingsDao
@@ -25,8 +27,9 @@ import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
     views = [
         UserWithLatestRatingChangeView::class,
     ],
-    exportSchema = true,
+    exportSchema = false,
 )
+@ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun contestDao(): ContestDao
@@ -35,4 +38,9 @@ abstract class AppDatabase: RoomDatabase() {
     companion object {
         const val VERSION = 12
     }
+}
+
+@Suppress("KotlinNoActualForExpect")
+expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
+    override fun initialize(): AppDatabase
 }

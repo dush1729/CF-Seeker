@@ -7,8 +7,8 @@ import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
 import com.dush1729.cfseeker.ui.SortOption
+import kotlin.math.round
 import kotlinx.coroutines.flow.Flow
-import java.util.Locale
 
 interface DatabaseService {
     suspend fun addUser(user: UserEntity, ratingChanges: List<RatingChangeEntity>)
@@ -75,8 +75,20 @@ data class ContestCacheInfo(
     fun formatSize(bytes: Long): String {
         return when {
             bytes < 1024 -> "$bytes B"
-            bytes < 1024 * 1024 -> String.format(Locale.US, "%.1f KB", bytes / 1024.0)
-            else -> String.format(Locale.US, "%.1f MB", bytes / (1024.0 * 1024.0))
+            bytes < 1024 * 1024 -> {
+                val kb = round(bytes / 1024.0 * 10) / 10.0
+                "${formatDecimal(kb)} KB"
+            }
+            else -> {
+                val mb = round(bytes / (1024.0 * 1024.0) * 10) / 10.0
+                "${formatDecimal(mb)} MB"
+            }
         }
+    }
+
+    private fun formatDecimal(value: Double): String {
+        val long = value.toLong()
+        val decimal = ((value - long) * 10 + 0.5).toLong()
+        return "$long.$decimal"
     }
 }

@@ -1,22 +1,23 @@
 package com.dush1729.cfseeker.data.local
 
 import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.execSQL
 
 object AppDatabaseMigrations {
     val MIGRATION_1_2 = object : Migration(1, 2) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("CREATE INDEX IF NOT EXISTS index_user_handle ON user(handle)")
-            db.execSQL("CREATE INDEX IF NOT EXISTS index_user_lastSync ON user(lastSync)")
-            db.execSQL("CREATE INDEX IF NOT EXISTS index_user_rating ON user(rating)")
-            db.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_handle ON rating_change(handle)")
-            db.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_ratingUpdateTimeSeconds ON rating_change(ratingUpdateTimeSeconds)")
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_user_handle ON user(handle)")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_user_lastSync ON user(lastSync)")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_user_rating ON user(rating)")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_handle ON rating_change(handle)")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_ratingUpdateTimeSeconds ON rating_change(ratingUpdateTimeSeconds)")
         }
     }
 
     val MIGRATION_2_3 = object : Migration(2, 3) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("""
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("""
                 CREATE TABLE IF NOT EXISTS `contest` (
                     `id` INTEGER PRIMARY KEY NOT NULL,
                     `name` TEXT NOT NULL,
@@ -28,24 +29,24 @@ object AppDatabaseMigrations {
                     `relativeTimeSeconds` INTEGER NOT NULL
                 )
             """)
-            db.execSQL("CREATE INDEX IF NOT EXISTS index_contest_id ON contest(id)")
-            db.execSQL("CREATE INDEX IF NOT EXISTS index_contest_phase ON contest(phase)")
-            db.execSQL("CREATE INDEX IF NOT EXISTS index_contest_startTimeSeconds ON contest(startTimeSeconds)")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_contest_id ON contest(id)")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_contest_phase ON contest(phase)")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_contest_startTimeSeconds ON contest(startTimeSeconds)")
         }
     }
 
     val MIGRATION_3_4 = object : Migration(3, 4) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("DROP INDEX IF EXISTS index_contest_id")
-            db.execSQL("DROP INDEX IF EXISTS index_contest_phase")
-            db.execSQL("DROP INDEX IF EXISTS index_contest_startTimeSeconds")
-            db.execSQL("CREATE INDEX IF NOT EXISTS index_contest_phase_startTime ON contest(phase, startTimeSeconds)")
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("DROP INDEX IF EXISTS index_contest_id")
+            connection.execSQL("DROP INDEX IF EXISTS index_contest_phase")
+            connection.execSQL("DROP INDEX IF EXISTS index_contest_startTimeSeconds")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_contest_phase_startTime ON contest(phase, startTimeSeconds)")
         }
     }
 
     val MIGRATION_4_5 = object : Migration(4, 5) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("""
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("""
                 CREATE TABLE IF NOT EXISTS `contest_problem` (
                     `contestId` INTEGER NOT NULL,
                     `problemsetName` TEXT,
@@ -58,7 +59,7 @@ object AppDatabaseMigrations {
                     PRIMARY KEY(`contestId`, `index`)
                 )
             """)
-            db.execSQL("""
+            connection.execSQL("""
                 CREATE TABLE IF NOT EXISTS `contest_standing_row` (
                     `contestId` INTEGER NOT NULL,
                     `rank` INTEGER NOT NULL,
@@ -81,9 +82,9 @@ object AppDatabaseMigrations {
     }
 
     val MIGRATION_5_6 = object : Migration(5, 6) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("DROP TABLE IF EXISTS `contest_standing_row`")
-            db.execSQL("""
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("DROP TABLE IF EXISTS `contest_standing_row`")
+            connection.execSQL("""
                 CREATE TABLE IF NOT EXISTS `contest_standing_row` (
                     `contestId` INTEGER NOT NULL,
                     `rank` INTEGER NOT NULL,
@@ -102,45 +103,45 @@ object AppDatabaseMigrations {
                     PRIMARY KEY(`contestId`, `memberHandles`)
                 )
             """)
-            db.execSQL("CREATE INDEX IF NOT EXISTS index_contest_standing_contestId_rank ON contest_standing_row(contestId, rank)")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_contest_standing_contestId_rank ON contest_standing_row(contestId, rank)")
         }
     }
 
     val MIGRATION_6_7 = object : Migration(6, 7) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("ALTER TABLE `rating_change` ADD COLUMN `source` TEXT NOT NULL DEFAULT 'USER'")
-            db.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_contestId_source ON rating_change(contestId, source)")
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("ALTER TABLE `rating_change` ADD COLUMN `source` TEXT NOT NULL DEFAULT 'USER'")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_contestId_source ON rating_change(contestId, source)")
         }
     }
 
     val MIGRATION_7_8 = object : Migration(7, 8) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("DROP INDEX IF EXISTS index_rating_change_handle")
-            db.execSQL("DROP INDEX IF EXISTS index_rating_change_ratingUpdateTimeSeconds")
-            db.execSQL("DROP INDEX IF EXISTS index_rating_change_contestId_source")
-            db.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_handle_source_time ON rating_change(handle, source, ratingUpdateTimeSeconds)")
-            db.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_contestId_rank ON rating_change(contestId, contestRank)")
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("DROP INDEX IF EXISTS index_rating_change_handle")
+            connection.execSQL("DROP INDEX IF EXISTS index_rating_change_ratingUpdateTimeSeconds")
+            connection.execSQL("DROP INDEX IF EXISTS index_rating_change_contestId_source")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_handle_source_time ON rating_change(handle, source, ratingUpdateTimeSeconds)")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_contestId_rank ON rating_change(contestId, contestRank)")
         }
     }
 
     val MIGRATION_8_9 = object : Migration(8, 9) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("DROP INDEX IF EXISTS index_user_handle")
-            db.execSQL("CREATE INDEX IF NOT EXISTS index_user_handle ON user(handle COLLATE NOCASE)")
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("DROP INDEX IF EXISTS index_user_handle")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_user_handle ON user(handle COLLATE NOCASE)")
         }
     }
 
     val MIGRATION_9_10 = object : Migration(9, 10) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("DROP INDEX IF EXISTS index_rating_change_handle_source_time")
-            db.execSQL("DROP INDEX IF EXISTS index_rating_change_handle_source_ratingUpdateTimeSeconds")
-            db.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_source_handle_ratingUpdateTimeSeconds ON rating_change(source, handle, ratingUpdateTimeSeconds)")
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("DROP INDEX IF EXISTS index_rating_change_handle_source_time")
+            connection.execSQL("DROP INDEX IF EXISTS index_rating_change_handle_source_ratingUpdateTimeSeconds")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_rating_change_source_handle_ratingUpdateTimeSeconds ON rating_change(source, handle, ratingUpdateTimeSeconds)")
         }
     }
 
     val MIGRATION_10_11 = object : Migration(10, 11) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("""CREATE VIEW `user_with_latest_rating_change` AS SELECT
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("""CREATE VIEW `user_with_latest_rating_change` AS SELECT
             u.handle,
             u.avatar,
             u.city,
@@ -178,8 +179,8 @@ object AppDatabaseMigrations {
     }
 
     val MIGRATION_11_12 = object : Migration(11, 12) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("DROP INDEX IF EXISTS index_rating_change_handle_source_ratingUpdateTimeSeconds")
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("DROP INDEX IF EXISTS index_rating_change_handle_source_ratingUpdateTimeSeconds")
         }
     }
 
