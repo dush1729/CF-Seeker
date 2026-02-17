@@ -4,20 +4,21 @@ import com.dush1729.cfseeker.data.local.DatabaseService
 import com.dush1729.cfseeker.data.local.entity.ContestProblemEntity
 import com.dush1729.cfseeker.data.local.entity.ContestStandingRowEntity
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
-import com.dush1729.cfseeker.data.remote.api.NetworkService
+import com.dush1729.cfseeker.data.remote.api.CodeforcesApi
 import com.dush1729.cfseeker.data.remote.api.safeApiCall
 import com.dush1729.cfseeker.data.remote.model.Problem
+import com.dush1729.cfseeker.data.remote.model.ProblemResult
 import com.dush1729.cfseeker.data.remote.model.RanklistRow
-import com.google.gson.Gson
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ContestStandingsRepository @Inject constructor(
-    private val api: NetworkService,
-    private val db: DatabaseService,
-    private val gson: Gson
+    private val api: CodeforcesApi,
+    private val db: DatabaseService
 ) {
     suspend fun fetchContestStandings(contestId: Int): Unit = withContext(Dispatchers.IO) {
         val response = safeApiCall {
@@ -25,7 +26,7 @@ class ContestStandingsRepository @Inject constructor(
         }.result ?: return@withContext
 
         val problems = response.problems.map { it.toEntity(contestId) }
-        val standings = response.rows.map { it.toEntity(contestId, gson) }
+        val standings = response.rows.map { it.toEntity(contestId) }
 
         db.insertContestStandings(contestId, problems, standings)
     }
@@ -70,7 +71,7 @@ fun Problem.toEntity(contestId: Int): ContestProblemEntity = ContestProblemEntit
     tags = this.tags.joinToString(",")
 )
 
-fun RanklistRow.toEntity(contestId: Int, gson: Gson): ContestStandingRowEntity = ContestStandingRowEntity(
+fun RanklistRow.toEntity(contestId: Int): ContestStandingRowEntity = ContestStandingRowEntity(
     contestId = contestId,
     rank = this.rank,
     points = this.points,
@@ -84,5 +85,5 @@ fun RanklistRow.toEntity(contestId: Int, gson: Gson): ContestStandingRowEntity =
     ghost = this.party.ghost,
     room = this.party.room,
     memberHandles = this.party.members.joinToString(",") { it.handle },
-    problemResults = gson.toJson(this.problemResults)
+    problemResults = Json.encodeToString(this.problemResults)
 )

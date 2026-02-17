@@ -4,7 +4,7 @@ import com.dush1729.cfseeker.data.local.AppPreferences
 import com.dush1729.cfseeker.data.local.ContestCacheInfo
 import com.dush1729.cfseeker.data.local.DatabaseService
 import com.dush1729.cfseeker.data.local.entity.ContestEntity
-import com.dush1729.cfseeker.data.remote.api.NetworkService
+import com.dush1729.cfseeker.data.remote.api.CodeforcesApi
 import com.dush1729.cfseeker.data.remote.api.safeApiCall
 import com.dush1729.cfseeker.data.remote.model.Contest
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ContestRepository @Inject constructor(
-    private val api: NetworkService,
+    private val api: CodeforcesApi,
     private val db: DatabaseService,
     private val preferences: AppPreferences
 ) {

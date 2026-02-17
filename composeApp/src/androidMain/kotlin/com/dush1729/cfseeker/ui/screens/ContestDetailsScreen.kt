@@ -66,7 +66,7 @@ import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.remote.model.ProblemResult
 import com.dush1729.cfseeker.ui.ContestDetailsViewModel
 import com.dush1729.cfseeker.utils.toRelativeTime
-import com.google.gson.Gson
+import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -518,10 +518,9 @@ private fun Modifier.copyToClipboardOnLongPress(text: String): Modifier {
 
 @Composable
 private fun StandingTableRow(standing: ContestStandingRowEntity, showPenalty: Boolean) {
-    val gson = remember { Gson() }
     val problemResults = remember(standing.problemResults) {
         try {
-            gson.fromJson(standing.problemResults, Array<ProblemResult>::class.java).toList()
+            Json.decodeFromString<List<ProblemResult>>(standing.problemResults)
         } catch (e: Exception) {
             emptyList()
         }

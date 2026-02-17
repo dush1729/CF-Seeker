@@ -1,8 +1,8 @@
 package com.dush1729.cfseeker.data.remote.model
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Member(
-    @SerializedName("handle")
     val handle: String
 )

@@ -8,46 +8,33 @@
 -renamesourcefileattribute SourceFile
 
 #---------------------------------
-# Gson Serialization Rules
+# kotlinx.serialization Rules
 #---------------------------------
 
-# Preserve generic type information for Gson (critical for List<T>, Map<K,V>, etc.)
 -keepattributes Signature
-
-# Preserve annotations used by Gson
 -keepattributes *Annotation*
 
-# Keep Gson classes
--keep class com.google.gson.** { *; }
--dontwarn com.google.gson.**
-
-# Keep @SerializedName annotation and its value
--keepclassmembers,allowobfuscation class * {
-    @com.google.gson.annotations.SerializedName <fields>;
+# Keep serializers
+-keepclassmembers class kotlinx.serialization.json.** {
+    *** Companion;
+}
+-keepclasseswithmembers class kotlinx.serialization.json.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+-keepclassmembers @kotlinx.serialization.Serializable class com.dush1729.cfseeker.data.remote.model.** {
+    *** Companion;
+    *** INSTANCE;
+    kotlinx.serialization.KSerializer serializer(...);
 }
 
-# Keep all Codeforces API model classes (remote models with @SerializedName)
--keep class com.dush1729.cfseeker.data.remote.model.** { *; }
--keepclassmembers class com.dush1729.cfseeker.data.remote.model.** { *; }
-
 #---------------------------------
-# Retrofit Rules
+# Ktor Rules
 #---------------------------------
 
-# Keep Retrofit interfaces and their methods
--keep,allowobfuscation interface com.dush1729.cfseeker.data.remote.api.NetworkService
--keepclassmembers,allowshrinking,allowobfuscation interface * {
-    @retrofit2.http.* <methods>;
-}
+-dontwarn io.ktor.**
+-keep class io.ktor.** { *; }
 
-# Retrofit does reflection on generic parameters
--keepattributes Exceptions
-
-# Keep Retrofit classes
--dontwarn retrofit2.**
--keep class retrofit2.** { *; }
-
-# OkHttp
+# OkHttp (used by Ktor OkHttp engine)
 -dontwarn okhttp3.**
 -dontwarn okio.**
 -keep class okhttp3.** { *; }
@@ -78,12 +65,6 @@
 -keepattributes RuntimeVisibleAnnotations
 
 # Keep data class component functions and copy method
--keepclassmembers class com.dush1729.cfseeker.data.remote.model.** {
-    public <init>(...);
-    public ** component*();
-    public ** copy(...);
-}
-
 -keepclassmembers class com.dush1729.cfseeker.data.local.entity.** {
     public <init>(...);
     public ** component*();

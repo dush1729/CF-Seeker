@@ -19,7 +19,8 @@ import com.dush1729.cfseeker.data.remote.config.RemoteConfigService
 import com.dush1729.cfseeker.data.local.AppPreferences
 import com.dush1729.cfseeker.data.local.AppPreferencesImpl
 import com.dush1729.cfseeker.data.local.DatabaseService
-import com.dush1729.cfseeker.data.remote.api.NetworkService
+import com.dush1729.cfseeker.data.remote.api.CodeforcesApi
+import com.dush1729.cfseeker.data.remote.api.createPlatformHttpClient
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -27,14 +28,15 @@ import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfig
-import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 @Module
@@ -251,19 +253,21 @@ object ApplicationModule {
 
     @Singleton
     @Provides
-    fun provideGson(): Gson {
-        return Gson()
+    fun provideHttpClient(): HttpClient {
+        return createPlatformHttpClient().config {
+            install(ContentNegotiation) {
+                json(Json {
+                    ignoreUnknownKeys = true
+                    isLenient = true
+                })
+            }
+        }
     }
 
     @Singleton
     @Provides
-    fun provideNetworkService(gson: Gson): NetworkService {
-        return Retrofit
-            .Builder()
-            .baseUrl("https://codeforces.com/api/")
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .build()
-            .create(NetworkService::class.java)
+    fun provideCodeforcesApi(httpClient: HttpClient): CodeforcesApi {
+        return CodeforcesApi(httpClient)
     }
 
     @Singleton

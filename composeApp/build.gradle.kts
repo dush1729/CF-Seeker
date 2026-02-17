@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.kotlin.serialization)
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     alias(libs.plugins.google.services)
@@ -39,8 +40,8 @@ kotlin {
             implementation(libs.androidx.activity)
             implementation(libs.androidx.constraintlayout)
 
-            implementation(libs.retrofit)
-            implementation(libs.converter.gson)
+            // Ktor Android engine
+            implementation(libs.ktor.client.okhttp)
 
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.room.ktx)
@@ -78,6 +79,25 @@ kotlin {
         }
 
         commonMain.dependencies {
+            // Ktor
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.kotlinx.serialization.json)
+        }
+
+        val iosX64Main by getting
+        val iosArm64Main by getting
+        val iosSimulatorArm64Main by getting
+        val iosMain by creating {
+            dependsOn(commonMain.get())
+            iosX64Main.dependsOn(this)
+            iosArm64Main.dependsOn(this)
+            iosSimulatorArm64Main.dependsOn(this)
+
+            dependencies {
+                implementation(libs.ktor.client.darwin)
+            }
         }
     }
 }

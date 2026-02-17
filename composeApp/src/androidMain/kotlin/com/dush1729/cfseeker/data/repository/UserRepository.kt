@@ -4,7 +4,7 @@ import com.dush1729.cfseeker.data.local.DatabaseService
 import com.dush1729.cfseeker.data.local.entity.RatingChangeEntity
 import com.dush1729.cfseeker.data.local.entity.UserEntity
 import com.dush1729.cfseeker.data.local.view.UserWithLatestRatingChangeView
-import com.dush1729.cfseeker.data.remote.api.NetworkService
+import com.dush1729.cfseeker.data.remote.api.CodeforcesApi
 import com.dush1729.cfseeker.data.remote.api.safeApiCall
 import com.dush1729.cfseeker.data.remote.model.RatingChange
 import com.dush1729.cfseeker.data.remote.model.User
@@ -17,7 +17,7 @@ import javax.inject.Inject
 import kotlin.String
 
 class UserRepository @Inject constructor(
-    private val api: NetworkService,
+    private val api: CodeforcesApi,
     private val db: DatabaseService
 ) {
     // makes 1 api call for user info + 1 call for rating changes
