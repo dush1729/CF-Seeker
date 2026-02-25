@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.platform.PlatformActions
 import com.dush1729.cfseeker.platform.appVersionName
+import com.dush1729.cfseeker.platform.isIos
 
 private const val GITHUB_URL = "https://github.com/dush1729/CF-Seeker"
 private const val FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScMAsX0GYBHgGeX0xJQBumuEQDgdamuuJNFWv1ag4FXi19Nng/viewform?usp=dialog"
@@ -91,41 +92,43 @@ fun AboutScreen(
                 }
             )
 
-            // Play Store Card
-            AboutCard(
-                icon = {
-                    Icon(
-                        imageVector = Icons.Filled.Star,
-                        contentDescription = "Rate",
-                        modifier = Modifier.size(32.dp)
-                    )
-                },
-                title = "Rate on Play Store",
-                description = "Rate and review the app on Play Store",
-                onClick = {
-                    analyticsService.logPlayStoreOpened("about_screen")
-                    platformActions.openPlayStore()
-                }
-            )
+            if (!isIos) {
+                // Play Store Card
+                AboutCard(
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = "Rate",
+                            modifier = Modifier.size(32.dp)
+                        )
+                    },
+                    title = "Rate on Play Store",
+                    description = "Rate and review the app on Play Store",
+                    onClick = {
+                        analyticsService.logPlayStoreOpened("about_screen")
+                        platformActions.openPlayStore()
+                    }
+                )
 
-            // Share Card
-            AboutCard(
-                icon = {
-                    Icon(
-                        imageVector = Icons.Filled.Share,
-                        contentDescription = "Share",
-                        modifier = Modifier.size(32.dp)
-                    )
-                },
-                title = "Share App",
-                description = "Share Codeforces Seeker with others",
-                onClick = {
-                    analyticsService.logAppShared("about")
-                    platformActions.shareText(
-                        "Check out Codeforces Seeker on Google Play!\nhttps://play.google.com/store/apps/details?id=com.dush1729.cfseeker"
-                    )
-                }
-            )
+                // Share Card
+                AboutCard(
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Share,
+                            contentDescription = "Share",
+                            modifier = Modifier.size(32.dp)
+                        )
+                    },
+                    title = "Share App",
+                    description = "Share Codeforces Seeker with others",
+                    onClick = {
+                        analyticsService.logAppShared("about")
+                        platformActions.shareText(
+                            "Check out Codeforces Seeker on Google Play!\nhttps://play.google.com/store/apps/details?id=com.dush1729.cfseeker"
+                        )
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.weight(1f))
 

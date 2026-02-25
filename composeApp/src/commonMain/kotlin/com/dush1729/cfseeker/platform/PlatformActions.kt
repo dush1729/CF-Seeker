@@ -7,3 +7,5 @@ interface PlatformActions {
 }
 
 expect val appVersionName: String
+
+expect val isIos: Boolean

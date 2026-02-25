@@ -44,3 +44,5 @@ class AndroidPlatformActions(private val context: Context) : PlatformActions {
 }
 
 actual val appVersionName: String = BuildConfig.VERSION_NAME
+
+actual val isIos: Boolean = false
