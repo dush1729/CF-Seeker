@@ -8,6 +8,9 @@ import androidx.compose.ui.window.ComposeUIViewController
 import androidx.navigation.compose.rememberNavController
 import com.dush1729.cfseeker.analytics.AnalyticsService
 import com.dush1729.cfseeker.crashlytics.CrashlyticsService
+import com.dush1729.cfseeker.bridge.AnalyticsBridge
+import com.dush1729.cfseeker.bridge.CrashlyticsBridge
+import com.dush1729.cfseeker.bridge.RemoteConfigBridge
 import com.dush1729.cfseeker.di.commonModule
 import com.dush1729.cfseeker.di.iosModule
 import com.dush1729.cfseeker.navigation.CFSeekerNavGraph
@@ -19,9 +22,13 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.context.startKoin
 import org.koin.mp.KoinPlatform
 
-fun initKoin() {
+fun initKoin(
+    analyticsBridge: AnalyticsBridge,
+    crashlyticsBridge: CrashlyticsBridge,
+    remoteConfigBridge: RemoteConfigBridge
+) {
     startKoin {
-        modules(commonModule, iosModule)
+        modules(commonModule, iosModule(analyticsBridge, crashlyticsBridge, remoteConfigBridge))
     }
 }
 
